@@ -1,11 +1,16 @@
 using UnityEngine;
-using UnityEngine.UI; 
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Slider))]
 public class SliderHealth : MonoBehaviour
 {
-    public Slider healthSlider;
-    private PlayerMovement player; 
+
+    private Slider healthSlider;
+    private PlayerMovement player;
+
+    [Header("Animation")]
+    [Tooltip("Berapa cepat bar bergerak (poin health per detik)")]
+    public float animationSpeed = 50f; // Kecepatan animasi bar
 
     void Start()
     {
@@ -16,7 +21,6 @@ public class SliderHealth : MonoBehaviour
 
         if (player != null)
         {
-            // Atur nilai maksimum slider sesuai maxHealth dari Player
             healthSlider.maxValue = player.maxHealth;
             healthSlider.value = player.maxHealth;
         }
@@ -28,10 +32,20 @@ public class SliderHealth : MonoBehaviour
 
     void Update()
     {
-        // Update value slider setiap frame sesuai health statis
-        if (player != null)
-        {
-            healthSlider.value = HitJudgement.health;
-        }
+        // Pastikan player ada
+        if (player == null) return;
+
+        float targetValue = HitJudgement.health;
+
+        float currentValue = healthSlider.value;
+
+       
+        float newSliderValue = Mathf.MoveTowards(
+            currentValue,
+            targetValue,
+            animationSpeed * Time.deltaTime 
+        );
+
+        healthSlider.value = newSliderValue;
     }
 }
