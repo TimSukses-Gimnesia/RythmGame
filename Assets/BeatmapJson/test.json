@@ -1,0 +1,9 @@
+{
+  "notes": [
+    { "time": 5.20, "type": "note", "dir": "up" },
+    { "time": 6.32, "type": "note", "dir": "left" },
+    { "time": 7.85, "type": "obstacle", "dir": "right" },
+    { "time": 8.15, "type": "note", "dir": "down" },
+    { "time": 60.32, "type": "obstacle", "dir": "up" }
+  ]
+}

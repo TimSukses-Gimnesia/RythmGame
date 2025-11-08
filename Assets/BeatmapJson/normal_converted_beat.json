@@ -1,0 +1,1150 @@
+{
+  "notes": [
+    {
+      "beat": 5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 7,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 9,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 11,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 13.021,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 15,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 17,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 20,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 21,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 22.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 24,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 25,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 26.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 28,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 29,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 30.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 32,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 33,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 34,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 35,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 36,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 37,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 38.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 40,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 41,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 42.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 44,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 45,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 46.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 48,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 49,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 50,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 51,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 52,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 53,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 54.455,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 56,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 57,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 58.469,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 60,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 61,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 62.438,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 64,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 65,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 66.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 68,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 69,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 70.5,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 72,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 73,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 74.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 76,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 77,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 78.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 80,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 81.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 82,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 83,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 84,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 84,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 85,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 86.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 88,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 89,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 90.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 92,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 93,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 94.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 96,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 97,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 98,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 99,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 100,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 101,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 101,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 103,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 103,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 105,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 105,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 107,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 107,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 109,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 109,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 111,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 111,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 112,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 113,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 113,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 114,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 117,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 117,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 118.5,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 119,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 120,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 121,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 121,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 122.5,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 123,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 124,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 124.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 125.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 126,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 127,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 128,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 129,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 130.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 131,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 132.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 132.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 133.5,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 134.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 135,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 136,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 137,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 138,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 139,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 140,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 140.5,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 141.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 142.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 143.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 144.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 145,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 146.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 147,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 148,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 148.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 149.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 150.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 151,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 152,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 153,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 154,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 155,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 156,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 156.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 157.417,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 158,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 159,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 160,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 160.969,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 162.417,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 163,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 164,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 164.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 165.5,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 166.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 167,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 168,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 169,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 170,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 171,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 173,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 174.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 176,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 177,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 177,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 181,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 181,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 182.5,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 183,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 184,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 185,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 185,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 186.5,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 187,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 188,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 188.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 189.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 190,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 191,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 192,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 193,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 194.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 195,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 196.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 196.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 197.5,
+      "type": "note",
+      "dir": "right",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 198.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 199,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 200,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 201,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 202,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 203,
+      "type": "note",
+      "dir": "left",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 205,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 205,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 211,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 211.5,
+      "type": "note",
+      "dir": "down",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 212.5,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 213,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    },
+    {
+      "beat": 213,
+      "type": "note",
+      "dir": "up",
+      "holdBeat": 0.0
+    }
+  ]
+}

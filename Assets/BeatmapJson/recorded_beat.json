@@ -1,0 +1,28 @@
+{
+    "notes": [
+        {
+            "beat": 11.662933349609375,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0
+        },
+        {
+            "beat": 16.00497817993164,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0
+        },
+        {
+            "beat": 19.69066619873047,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0
+        },
+        {
+            "beat": 23.527822494506837,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0
+        }
+    ]
+}
