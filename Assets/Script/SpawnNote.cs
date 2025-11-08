@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 
+[RequireComponent(typeof(AudioSource))]
 public class SpawnNote : MonoBehaviour
 {
     [Header("OSU Beatmap")]
@@ -68,18 +69,21 @@ public class SpawnNote : MonoBehaviour
         Transform spawnPos, targetPos;
         switch (note.dir)
         {
-            case "up":    spawnPos = upSpawn;    targetPos = upTarget;    break;
-            case "down":  spawnPos = downSpawn;  targetPos = downTarget;  break;
-            case "left":  spawnPos = leftSpawn;  targetPos = leftTarget;  break;
+            // ... (kode switch case kamu tetap sama) ...
+            case "up": spawnPos = upSpawn; targetPos = upTarget; break;
+            case "down": spawnPos = downSpawn; targetPos = downTarget; break;
+            case "left": spawnPos = leftSpawn; targetPos = leftTarget; break;
             case "right": spawnPos = rightSpawn; targetPos = rightTarget; break;
-            default:      spawnPos = upSpawn;    targetPos = upTarget;    break;
+            default: spawnPos = upSpawn; targetPos = upTarget; break;
         }
         GameObject obj = Instantiate(notePrefab, spawnPos.position, Quaternion.identity);
         var n = obj.GetComponent<Note>();
-        n.hitTime = hitTimeSec;               // waktu kena (detik)
+        n.hitTime = hitTimeSec;
         n.spawnPos = spawnPos.position;
         n.targetPos = targetPos.position;
         n.travelDuration = travelDuration;
         n.speed = noteSpeed;
+
+        n.dir = note.dir; // <--- TAMBAHKAN BARIS INI
     }
 }

@@ -3,11 +3,17 @@ using UnityEngine;
 public class Note : MonoBehaviour
 {
     [Header("Timing")]
-    public float hitTime;        // detik saat note harus kena
+    public float hitTime;      // detik saat note harus kena
+    public string dir;         // "up", "down", "left", "right" <-- DITAMBAHKAN
+
+    [Header("Movement")]
     public Vector3 spawnPos;
     public Vector3 targetPos;
     public float travelDuration;
     public float speed = 1f;
+
+    [HideInInspector]
+    public bool isHit = false; // Tandai jika sudah kena hit <-- DITAMBAHKAN
 
     double songStartDspTime;
 
@@ -21,6 +27,9 @@ public class Note : MonoBehaviour
 
     void Update()
     {
+        // Jika note sudah di-hit, hentikan pergerakannya
+        if (isHit) return;
+
         double songTime = AudioSettings.dspTime - songStartDspTime;
         double effectiveDuration = travelDuration / Mathf.Max(0.001f, speed);
         double spawnTime = hitTime - effectiveDuration;
@@ -29,9 +38,8 @@ public class Note : MonoBehaviour
 
         transform.position = Vector3.Lerp(spawnPos, targetPos, (float)progress);
 
-        // Hapus note setelah melewati target
-        if (progress >= 1f && songTime > hitTime + 0.2f)
-            Destroy(gameObject);
+        // Logic "Hapus note setelah melewati target" DIHAPUS DARI SINI.
+        // Script HitJudgement.cs sekarang yang bertanggung jawab
+        // untuk menghapus note (baik saat kena atau saat miss).
     }
 }
-
