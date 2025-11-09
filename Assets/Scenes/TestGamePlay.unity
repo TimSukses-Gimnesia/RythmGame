@@ -277,11 +277,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6478bff119cf912478e468a317f828e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnNote
-  osuBeatmap: {fileID: 4900000, guid: 4f1e2a3b1d858b644bbb47489637d97b, type: 3}
+  osuBeatmap: {fileID: 4900000, guid: a8a9d941fec121b4d9d4ffd90c3fc147, type: 3}
   extraOffsetSeconds: 0
-  travelDuration: 1.2
+  travelDuration: 1
   noteSpeed: 1
+  holdNoteSpeed: 1
   notePrefab: {fileID: 8946434144321846813, guid: bc4ba45324954044e8c4462b673699f4, type: 3}
+  holdNotePrefab: {fileID: 605336234082611854, guid: 0e68b8837372c084ea577b037dcca2df, type: 3}
   upSpawn: {fileID: 25803306}
   downSpawn: {fileID: 1868863917}
   leftSpawn: {fileID: 519932459}
@@ -671,6 +673,8 @@ MonoBehaviour:
   perfectHealthGain: 10
   goodHealthGain: 5
   missHealthPenalty: 15
+  holdBreakPenalty: 10
+  holdSuccessGain: 2
 --- !u!58 &722416202
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -819,6 +823,8 @@ MonoBehaviour:
   perfectHealthGain: 10
   goodHealthGain: 5
   missHealthPenalty: 15
+  holdBreakPenalty: 10
+  holdSuccessGain: 2
 --- !u!58 &855145286
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1269,106 +1275,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 406}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1409233251
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1409233253}
-  - component: {fileID: 1409233255}
-  - component: {fileID: 1409233256}
-  m_Layer: 0
-  m_Name: GameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1409233253
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1409233251}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1470.4099, y: 878.0847}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1409233255
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1409233251}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
-  m_FillRect: {fileID: 0}
-  m_HandleRect: {fileID: 0}
-  m_Direction: 0
-  m_MinValue: 0
-  m_MaxValue: 1
-  m_WholeNumbers: 0
-  m_Value: 0
-  m_OnValueChanged:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1409233256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1409233251}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 744ffc909a992ff418c298466c73f206, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SliderHealth
 --- !u!1 &1421322071
 GameObject:
   m_ObjectHideFlags: 0
@@ -2017,6 +1923,8 @@ MonoBehaviour:
   perfectHealthGain: 10
   goodHealthGain: 5
   missHealthPenalty: 15
+  holdBreakPenalty: 10
+  holdSuccessGain: 2
 --- !u!58 &1822449043
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -2231,6 +2139,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1918679796}
   - component: {fileID: 1918679797}
+  - component: {fileID: 1918679798}
   m_Layer: 5
   m_Name: Slider Nyawa
   m_TagString: Untagged
@@ -2310,6 +2219,20 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1918679798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1918679795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 744ffc909a992ff418c298466c73f206, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SliderHealth
+  healthSlider: {fileID: 1918679797}
+  animationSpeed: 50
 --- !u!1 &1978609198
 GameObject:
   m_ObjectHideFlags: 0
@@ -2422,6 +2345,8 @@ MonoBehaviour:
   perfectHealthGain: 10
   goodHealthGain: 5
   missHealthPenalty: 15
+  holdBreakPenalty: 10
+  holdSuccessGain: 2
 --- !u!58 &1978609202
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -2499,4 +2424,3 @@ SceneRoots:
   - {fileID: 49122759}
   - {fileID: 1421322074}
   - {fileID: 1697679747}
-  - {fileID: 1409233253}

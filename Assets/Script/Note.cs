@@ -3,8 +3,10 @@ using UnityEngine;
 public class Note : MonoBehaviour
 {
     [Header("Timing")]
-    public float hitTime;      // detik saat note harus kena
-    public string dir;         // "up", "down", "left", "right" <-- DITAMBAHKAN
+    public float hitTime;
+    public string dir;
+    public string type;
+    public float holdDurationSec;
 
     [Header("Movement")]
     public Vector3 spawnPos;
@@ -12,22 +14,64 @@ public class Note : MonoBehaviour
     public float travelDuration;
     public float speed = 1f;
 
+    public float noteMoveSpeed;
+
     [HideInInspector]
-    public bool isHit = false; // Tandai jika sudah kena hit <-- DITAMBAHKAN
+    public bool isHit = false;
 
     double songStartDspTime;
 
+    private SpriteRenderer mySpriteRenderer;
+
     void Start()
     {
-        // Ambil waktu mulai lagu dari Spawner
         var spawner = FindFirstObjectByType<SpawnNote>();
         songStartDspTime = spawner != null ? spawner.songStartDspTime : AudioSettings.dspTime;
         transform.position = spawnPos;
+
+        mySpriteRenderer = GetComponent<SpriteRenderer>();
+        if (mySpriteRenderer == null)
+        {
+            Debug.LogError("Prefab Note tidak memiliki SpriteRenderer!", this.gameObject);
+        }
+    }
+
+    public void SetupVisuals()
+    {
+        if (mySpriteRenderer == null) return; 
+
+        if (type == "hold")
+        {
+            
+
+            if (noteMoveSpeed > 0)
+            {
+                
+                float noteLength = noteMoveSpeed * holdDurationSec;
+
+           
+                mySpriteRenderer.size = new Vector2(mySpriteRenderer.size.x, noteLength);
+
+             
+            }
+        }
+   
+    }
+
+ 
+    public void UpdateHoldProgress(double songTime)
+    {
+        if (type != "hold" || mySpriteRenderer == null) return;
+
+        double holdStartTime = hitTime;
+        double holdEndTime = hitTime + holdDurationSec;
+        float progress = Mathf.Clamp01((float)((songTime - holdStartTime) / (holdEndTime - holdStartTime)));
+
+        mySpriteRenderer.color = Color.Lerp(Color.white, Color.yellow, progress);
     }
 
     void Update()
     {
-        // Jika note sudah di-hit, hentikan pergerakannya
         if (isHit) return;
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
@@ -37,9 +81,5 @@ public class Note : MonoBehaviour
         progress = Mathf.Clamp01((float)progress);
 
         transform.position = Vector3.Lerp(spawnPos, targetPos, (float)progress);
-
-        // Logic "Hapus note setelah melewati target" DIHAPUS DARI SINI.
-        // Script HitJudgement.cs sekarang yang bertanggung jawab
-        // untuk menghapus note (baik saat kena atau saat miss).
     }
 }

@@ -1,0 +1,500 @@
+{
+    "notes": [
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 5.136000156402588
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 5.146666526794434
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 5.248000144958496
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 5.530666828155518
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 5.818666458129883
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 5.989333152770996
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 6.127999782562256
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 6.266666889190674
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 6.570666790008545
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 6.858666896820068
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 6.970666885375977
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 7.098666667938232
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 7.178666591644287
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 7.48799991607666
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 7.850666522979736
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 8.74666690826416
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 9.189332962036133
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 10.186666488647461
+        },
+        {
+            "beat": 0.0,
+            "type": "hold",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 1.749333381652832,
+            "timeSec": 11.189332962036133
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 12.917333602905274
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 13.088000297546387
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 13.189332962036133
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 13.498666763305664
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 13.84000015258789
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 13.978666305541993
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 14.138667106628418
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 14.46933364868164
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 14.847999572753907
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 14.928000450134278
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 15.119999885559082
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 15.456000328063965
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 15.776000022888184
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 16.736000061035158
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 17.08799934387207
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 18.010665893554689
+        },
+        {
+            "beat": 0.0,
+            "type": "hold",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 1.4293333292007447,
+            "timeSec": 19.130666732788087
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 20.78933334350586
+        },
+        {
+            "beat": 0.0,
+            "type": "hold",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 1.002666711807251,
+            "timeSec": 21.08799934387207
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 22.106666564941408
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 22.31999969482422
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 22.378665924072267
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 22.496000289916993
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 22.62933349609375
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 22.736000061035158
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 22.93866729736328
+        },
+        {
+            "beat": 0.0,
+            "type": "hold",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 1.4613332748413087,
+            "timeSec": 23.338666915893556
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 24.895999908447267
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 25.237333297729493
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 26.106666564941408
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 27.13599967956543
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 28.650667190551759
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 29.029333114624025
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 29.818666458129884
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 29.957332611083986
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 30.058666229248048
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 30.170665740966798
+        },
+        {
+            "beat": 0.0,
+            "type": "hold",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 1.690666675567627,
+            "timeSec": 30.81599998474121
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 32.6879997253418
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 33.007999420166019
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "up",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 34.026668548583987
+        },
+        {
+            "beat": 0.0,
+            "type": "note",
+            "dir": "right",
+            "holdBeat": 0.0,
+            "holdDurationSec": 0.0,
+            "timeSec": 34.99733352661133
+        },
+        {
+            "beat": 0.0,
+            "type": "hold",
+            "dir": "left",
+            "holdBeat": 0.0,
+            "holdDurationSec": 5.541333198547363,
+            "timeSec": 35.07733154296875
+        }
+    ]
+}

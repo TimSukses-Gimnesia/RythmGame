@@ -66,19 +66,19 @@ public class PlayerMovement : MonoBehaviour
         }
 
 
-        HitJudgement.health -= healthDecreaseRate * Time.deltaTime;
+        //HitJudgement.health -= healthDecreaseRate * Time.deltaTime;
 
     
-        if (HitJudgement.health > maxHealth)
-        {
-            HitJudgement.health = maxHealth;
-        }
+        //if (HitJudgement.health > maxHealth)
+        //{
+        //    HitJudgement.health = maxHealth;
+        //}
 
-        if (HitJudgement.health <= 0)
-        {
-            HitJudgement.health = 0;
-            HandleGameOver();
-        }
+        //if (HitJudgement.health <= 0)
+        //{
+        //    HitJudgement.health = 0;
+        //    HandleGameOver();
+        //}
     }
 
     void HandleGameOver()

@@ -43,7 +43,9 @@ public class BeatmapRecorder : MonoBehaviour
         // simpan manual (R)
         if (Keyboard.current?.rKey != null && Keyboard.current.rKey.wasPressedThisFrame)
         {
-            SaveJson($"C:/Users/piosg/Documents/GitHub/Body Frontier/Body Frontier/RythmGame/Assets/BeatmapJson/{fileName}");
+            // Ini adalah path yang benar ke folder StreamingAssets
+            string path = Path.Combine(Application.streamingAssetsPath, fileName);
+            SaveJson(path);
         }
     }
 
@@ -52,23 +54,22 @@ public class BeatmapRecorder : MonoBehaviour
         if (key == null) return;
 
         if (key.wasPressedThisFrame)
-            holdStart[dir] = songTime;
+            holdStart[dir] = songTime; // Simpan waktu MULAI
 
         if (key.wasReleasedThisFrame)
         {
             if (!holdStart.ContainsKey(dir)) return;
 
-            double holdDurationSec = songTime - holdStart[dir];
-
-            // convert detik -> beat
-            float beat = (float)(songTime * BPM / 60.0);
-            float holdBeat = (float)(holdDurationSec * BPM / 60.0);
+            // --- INI LOGIKA BARU ---
+            double hitTimeSec = holdStart[dir]; // Waktu mulai adalah saat tombol ditekan
+            double holdDurationSec = songTime - hitTimeSec; // Durasi adalah selisihnya
 
             var n = new NoteData
             {
-                beat = beat,
+                timeSec = (float)hitTimeSec, // Simpan waktu mulai
                 dir = dir
             };
+            // ---------------------
 
             if (Keyboard.current != null && Keyboard.current.zKey.isPressed)
             {
@@ -77,11 +78,12 @@ public class BeatmapRecorder : MonoBehaviour
             else if (holdDurationSec >= holdThresholdSec)
             {
                 n.type = "hold";
-                n.holdBeat = holdBeat;
+                n.holdDurationSec = (float)holdDurationSec; // Simpan durasi hold
             }
             else
             {
                 n.type = "note";
+                n.holdDurationSec = 0f; // Note biasa tidak punya durasi
             }
 
             recordedNotes.Add(n);

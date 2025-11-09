@@ -1,0 +1,131 @@
+osu file format v14
+
+[General]
+AudioFilename: audio.mp3
+AudioLeadIn: 0
+PreviewTime: -1
+Countdown: 0
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 3
+LetterboxInBreaks: 0
+SpecialStyle: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 0.8
+BeatDivisor: 16
+GridSize: 32
+TimelineZoom: 1
+
+[Metadata]
+Title:fix ini a
+TitleUnicode:fix ini
+Artist:Aku
+ArtistUnicode:Aku
+Creator:awd
+Version:versi saya
+Source:
+Tags:
+BeatmapID:0
+BeatmapSetID:-1
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:4
+OverallDifficulty:5
+ApproachRate:5
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+3153.39344262295,983.606557377049,4,1,0,100,1,0
+
+
+[HitObjects]
+64,192,2846,1,0,0:0:0:0:
+192,192,3091,1,0,0:0:0:0:
+320,192,3276,1,0,0:0:0:0:
+// Diubah ke Bawah
+192,192,3583,1,0,0:0:0:0:
+448,192,3952,1,0,0:0:0:0:
+192,192,4259,1,0,0:0:0:0:
+// Diubah ke Bawah
+192,192,4690,1,0,0:0:0:0:
+64,192,4997,1,0,0:0:0:0:
+448,192,5243,1,0,0:0:0:0:
+320,192,5735,1,0,0:0:0:0:
+320,192,5935,1,0,0:0:0:0:
+// Hold diubah ke Bawah
+192,192,6596,128,0,7149:0:0:0:0:
+64,192,7395,128,0,7702:0:0:0:0:
+320,192,8255,128,0,8809:0:0:0:0:
+192,192,9055,1,0,0:0:0:0:
+64,192,10038,1,0,0:0:0:0:
+320,192,10776,1,0,0:0:0:0:
+192,192,10960,1,0,0:0:0:0:
+// Diubah ke Bawah
+192,192,11145,1,0,0:0:0:0:
+192,192,11391,1,0,0:0:0:0:
+320,192,11759,1,0,0:0:0:0:
+192,192,12067,1,0,0:0:0:0:
+64,192,12436,1,0,0:0:0:0:
+// Diubah ke Bawah
+192,192,12805,1,0,0:0:0:0:
+448,192,13112,1,0,0:0:0:0:
+192,192,13419,1,0,0:0:0:0:
+64,192,13788,1,0,0:0:0:0:
+192,192,14403,128,0,14833:0:0:0:0:
+448,192,15325,128,0,15694:0:0:0:0:
+320,192,16063,128,0,16677:0:0:0:0:
+// Diubah ke Bawah
+192,192,17108,1,0,0:0:0:0:
+192,192,17661,1,0,0:0:0:0:
+448,192,17907,1,0,0:0:0:0:
+320,192,18706,1,0,0:0:0:0:
+192,192,18952,1,0,0:0:0:0:
+// Diubah ke Bawah
+192,192,19259,1,0,0:0:0:0:
+64,192,19444,1,0,0:0:0:0:
+448,192,19936,1,0,0:0:0:0:
+192,192,20182,1,0,0:0:0:0:
+64,192,20427,1,0,0:0:0:0:
+320,192,20673,1,0,0:0:0:0:
+// Diubah ke Bawah
+192,192,20919,1,0,0:0:0:0:
+64,192,21104,1,0,0:0:0:0:
+448,192,21350,1,0,0:0:0:0:
+192,192,21534,1,0,0:0:0:0:
+192,192,22333,128,0,22887:0:0:0:0:
+448,192,23071,128,0,23686:0:0:0:0:
+64,192,24239,128,0,24915:0:0:0:0:
+192,192,25223,1,0,0:0:0:0:
+448,192,26083,1,0,0:0:0:0:
+192,192,26575,1,0,0:0:0:0:
+
+// --- BAGIAN INI DISEDERHANAKAN (Lebih Sedikit Note) ---
+// Note yang terlalu banyak (stream) sudah dihapus
+// dan diganti dengan note yang lebih jarang (jeda 500ms).
+// Arahnya juga dibuat bervariasi.
+192,192,27005,1,0,0:0:0:0:
+320,192,27505,1,0,0:0:0:0:
+192,192,28005,1,0,0:0:0:0:
+448,192,28505,1,0,0:0:0:0:
+192,192,29005,1,0,0:0:0:0:
+64,192,29505,1,0,0:0:0:0:
+
+// --- Bagian Hold Note Akhir ---
+192,192,30141,128,0,30878:0:0:0:0:
+320,192,31186,128,0,31862:0:0:0:0:
+64,192,31985,128,0,32784:0:0:0:0:
+192,192,33090,128,0,37825:0:0:0:0:

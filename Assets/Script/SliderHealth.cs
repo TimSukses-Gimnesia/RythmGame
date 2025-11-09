@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class SliderHealth : MonoBehaviour
 {
 
-    private Slider healthSlider;
+    public Slider healthSlider;
     private PlayerMovement player;
 
     [Header("Animation")]

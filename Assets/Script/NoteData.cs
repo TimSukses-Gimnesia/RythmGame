@@ -7,6 +7,8 @@ public class NoteData
     public string type;       // "note" / "hold" / "obstacle"(opsional)
     public string dir;        // "left" / "down" / "up" / "right"
     public float holdBeat;    // durasi hold dalam beat (0 jika bukan hold)
+    public float holdDurationSec;
+    public float timeSec;
 }
 
 [System.Serializable]
