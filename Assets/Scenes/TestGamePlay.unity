@@ -284,6 +284,14 @@ MonoBehaviour:
   holdNoteSpeed: 1
   notePrefab: {fileID: 8946434144321846813, guid: bc4ba45324954044e8c4462b673699f4, type: 3}
   holdNotePrefab: {fileID: 605336234082611854, guid: 0e68b8837372c084ea577b037dcca2df, type: 3}
+  enableTimingCircle: 1
+  timingCirclePrefab: {fileID: 9063108433256096780, guid: 3ec9c91ac0737214e929970cf51f0f2a, type: 3}
+  effectsParent: {fileID: 0}
+  timingCircleSortingLayer: Default
+  timingCircleSortingOrder: -5
+  timingCircleStartScale: 2
+  timingCircleEndScale: 0.5
+  timingCircleColor: {r: 1, g: 1, b: 1, a: 0.19607843}
   upSpawn: {fileID: 25803306}
   downSpawn: {fileID: 1868863917}
   leftSpawn: {fileID: 519932459}
