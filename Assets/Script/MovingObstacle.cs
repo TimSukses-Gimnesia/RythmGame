@@ -45,7 +45,7 @@ public class MovingObstacle : MonoBehaviour
             // End: Posisi Kiri + Offset JAUH KE KIRI
             endPos = laneLeft + (Vector3.left * pathExtensionOffset);
             
-            transform.rotation = Quaternion.Euler(0f, 0f, 0f); 
+            transform.rotation = Quaternion.Euler(0f, 0f, 90f); 
         }
         else // ObstacleType.Vertical
         {
@@ -58,7 +58,7 @@ public class MovingObstacle : MonoBehaviour
             // End: Posisi Bawah + Offset JAUH KE BAWAH
             endPos = laneDown + (Vector3.down * pathExtensionOffset);
 
-            transform.rotation = Quaternion.Euler(0f, 0f, 90f); 
+            transform.rotation = Quaternion.Euler(0f, 0f, 0f); 
         }
 
         // --- 2. SET POSISI AWAL DAN MULAI PERGERAKAN ---
