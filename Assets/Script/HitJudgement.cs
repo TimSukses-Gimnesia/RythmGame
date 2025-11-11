@@ -83,6 +83,58 @@ public class HitJudgement : MonoBehaviour
         if (timeDiff <= goodTime) return "Good";
         return "Miss";
     }
+    // --- INPUT HELPERS: dukung Arrow + WASD berdasarkan targetDirection ---
+    bool IsLaneKeyPressed()
+    {
+        if (Keyboard.current == null) return false;
+    
+        bool primary = Keyboard.current[targetKey].isPressed;
+    
+        // Alt mapping (WASD) berdasarkan targetDirection
+        bool alt = false;
+        switch (targetDirection)
+        {
+            case "up":    alt = Keyboard.current.wKey != null && Keyboard.current.wKey.isPressed; break;
+            case "down":  alt = Keyboard.current.sKey != null && Keyboard.current.sKey.isPressed; break;
+            case "left":  alt = Keyboard.current.aKey != null && Keyboard.current.aKey.isPressed; break;
+            case "right": alt = Keyboard.current.dKey != null && Keyboard.current.dKey.isPressed; break;
+        }
+        return primary || alt;
+    }
+    
+    bool WasLaneKeyPressedThisFrame()
+    {
+        if (Keyboard.current == null) return false;
+    
+        bool primary = Keyboard.current[targetKey].wasPressedThisFrame;
+    
+        bool alt = false;
+        switch (targetDirection)
+        {
+            case "up":    alt = Keyboard.current.wKey != null && Keyboard.current.wKey.wasPressedThisFrame; break;
+            case "down":  alt = Keyboard.current.sKey != null && Keyboard.current.sKey.wasPressedThisFrame; break;
+            case "left":  alt = Keyboard.current.aKey != null && Keyboard.current.aKey.wasPressedThisFrame; break;
+            case "right": alt = Keyboard.current.dKey != null && Keyboard.current.dKey.wasPressedThisFrame; break;
+        }
+        return primary || alt;
+    }
+    
+    bool WasLaneKeyReleasedThisFrame()
+    {
+        if (Keyboard.current == null) return false;
+    
+        bool primary = Keyboard.current[targetKey].wasReleasedThisFrame;
+    
+        bool alt = false;
+        switch (targetDirection)
+        {
+            case "up":    alt = Keyboard.current.wKey != null && Keyboard.current.wKey.wasReleasedThisFrame; break;
+            case "down":  alt = Keyboard.current.sKey != null && Keyboard.current.sKey.wasReleasedThisFrame; break;
+            case "left":  alt = Keyboard.current.aKey != null && Keyboard.current.aKey.wasReleasedThisFrame; break;
+            case "right": alt = Keyboard.current.dKey != null && Keyboard.current.dKey.wasReleasedThisFrame; break;
+        }
+        return primary || alt;
+    }
 
     void Update()
     {
@@ -101,40 +153,51 @@ public class HitJudgement : MonoBehaviour
         if (currentlyHoldingNote != null)
         {
             double holdEndTime = currentlyHoldingNote.hitTime + currentlyHoldingNote.holdDurationSec;
-
-            if (Keyboard.current != null && Keyboard.current[targetKey].isPressed)
+        
+            // sedang ditekan: teruskan progress sampai selesai
+            if (IsLaneKeyPressed())
             {
+                if (!currentlyHoldingNote.isHolding)
+                    currentlyHoldingNote.isHolding = true;
+        
                 if (songTime >= holdEndTime)
                 {
+                    // sukses mencapai tail (selesai)
                     HandleHoldJudgement(true, currentlyHoldingNote);
                 }
                 else
                 {
+                    // update visual shrink selama ditahan
                     currentlyHoldingNote.UpdateHoldProgress(songTime);
                 }
             }
-
-            if (Keyboard.current != null && Keyboard.current[targetKey].wasReleasedThisFrame)
+        
+            // dilepas di frame ini?
+            if (WasLaneKeyReleasedThisFrame())
             {
                 if (songTime < holdEndTime - goodTime)
                 {
+                    // lepas sebelum selesai → BREAK (bukan miss total)
+                    currentlyHoldingNote.holdBroken = true;
                     HandleHoldJudgement(false, currentlyHoldingNote);
                 }
                 else
                 {
+                    // release tepat/di akhir → success
                     HandleHoldJudgement(true, currentlyHoldingNote);
                 }
             }
         }
 
-        if (currentlyHoldingNote == null && Keyboard.current != null && Keyboard.current[targetKey].wasPressedThisFrame)
+
+        if (currentlyHoldingNote == null && WasLaneKeyPressedThisFrame())
         {
             if (notesInTrigger.Count > 0)
             {
                 Note noteToHit = notesInTrigger[0];
                 double timeDiff = System.Math.Abs(songTime - noteToHit.hitTime);
                 string judgement = GetJudgement(timeDiff);
-
+        
                 if (judgement != "Miss")
                 {
                     if (noteToHit.type == "hold")
@@ -142,6 +205,9 @@ public class HitJudgement : MonoBehaviour
                         currentlyHoldingNote = noteToHit;
                         notesInTrigger.RemoveAt(0);
                         HandleHit(judgement, noteToHit, false);
+        
+                        // set status hold aktif dari awal
+                        noteToHit.isHolding = true;
                     }
                     else
                     {
@@ -156,6 +222,7 @@ public class HitJudgement : MonoBehaviour
                 }
             }
         }
+
     }
 
     // ---- PATCHED HandleHit ----

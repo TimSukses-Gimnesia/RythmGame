@@ -1,10 +1,18 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
+using System.Collections;
+using TMPro;
 
 [RequireComponent(typeof(AudioSource))]
 public class SpawnNote : MonoBehaviour
 {
+    [Header("UI")]
+    public TextMeshProUGUI countdownText;
+
+    [Header("Game Start")]
+    public float preGameCountdown = 3f;
+
     [Header("OSU Beatmap")]
     public TextAsset osuBeatmap;
     public float extraOffsetSeconds = 0f;
@@ -71,11 +79,34 @@ public class SpawnNote : MonoBehaviour
                 Debug.LogWarning("Audio clip '" + clipName + "' tidak ditemukan di Resources.");
         }
 
-        songStartDspTime = AudioSettings.dspTime + audioLeadInSec;
+        songStartDspTime = AudioSettings.dspTime + audioLeadInSec + preGameCountdown;
         audioSource.PlayScheduled(songStartDspTime);
 
         notes = chart.notes;
+        StartCoroutine(CountdownRoutine());
     }
+
+    IEnumerator CountdownRoutine()
+    {
+        float timer = preGameCountdown;
+        while (timer > 0f)
+        {
+            // nanti kamu assign ke UI text kamu sendiri
+            // contoh:
+            // countdownText.text = Mathf.Ceil(timer).ToString();
+            if (countdownText != null)
+                countdownText.text = $"Start in : {Mathf.Ceil(timer).ToString()}";
+
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+
+        // setelah countdown habis, kosongkan UI
+        // countdownText.text = "";
+        if (countdownText != null)
+            countdownText.text = "";
+    }
+
 
     // Diperbarui agar note spawn di waktu yang tepat berdasarkan speed-nya
     void Update()
@@ -111,19 +142,19 @@ public class SpawnNote : MonoBehaviour
         {
             case "up":
                 spawnPos = upSpawn; targetPos = upTarget;
-                spawnRotation = Quaternion.Euler(0, 0, 0);
+                spawnRotation = Quaternion.Euler(0, 0, 180);
                 break;
             case "down":
                 spawnPos = downSpawn; targetPos = downTarget;
-                spawnRotation = Quaternion.Euler(0, 0, 180);
+                spawnRotation = Quaternion.Euler(0, 0, 0);
                 break;
             case "left":
                 spawnPos = leftSpawn; targetPos = leftTarget;
-                spawnRotation = Quaternion.Euler(0, 0, 90);
+                spawnRotation = Quaternion.Euler(0, 0, -90);
                 break;
             case "right":
                 spawnPos = rightSpawn; targetPos = rightTarget;
-                spawnRotation = Quaternion.Euler(0, 0, -90);
+                spawnRotation = Quaternion.Euler(0, 0, 90);
                 break;
             default:
                 spawnPos = upSpawn; targetPos = upTarget;
