@@ -102,7 +102,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         HitJudgement.health = Mathf.Clamp(HitJudgement.health, 0f, maxHealth);
-        if (HitJudgement.health <= 0 && !isGameOver)
+        if (HitJudgement.health <= 0f && !isGameOver)
         {
             HitJudgement.health = 0f;
             HandleGameOver();

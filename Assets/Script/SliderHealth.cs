@@ -37,15 +37,15 @@ public class SliderHealth : MonoBehaviour
 
         float targetValue = HitJudgement.health;
 
-        float currentValue = healthSlider.value;
+        // float currentValue = healthSlider.value;
 
        
-        float newSliderValue = Mathf.MoveTowards(
-            currentValue,
-            targetValue,
-            animationSpeed * Time.deltaTime 
-        );
+        // float newSliderValue = Mathf.MoveTowards(
+        //     currentValue,
+        //     targetValue,
+        //     animationSpeed * Time.deltaTime 
+        // );
 
-        healthSlider.value = newSliderValue;
+        healthSlider.value = targetValue;
     }
 }
