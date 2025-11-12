@@ -1,7 +1,6 @@
 using UnityEngine;
 
 public class Note : MonoBehaviour
-
 {
     [HideInInspector] public bool isHolding = false;   // player sedang menahan
     [HideInInspector] public bool holdBroken = false;  // dilepas sebelum selesai
@@ -18,18 +17,13 @@ public class Note : MonoBehaviour
     public float travelDuration;
     public float speed = 1f;
 
-    // Kecepatan gerak (satuan: unit/detik) dihitung di spawner
     public float noteMoveSpeed;
 
     [HideInInspector] public bool isHit = false;
 
-    // --- Options ---
     [Header("Visual Options")]
-    [Tooltip("Paksa SpriteRenderer ke Tiled agar SpriteRenderer.size berefek.")]
+    [Tooltip("Jika true, SpriteRenderer body akan diubah ke mode Tiled agar size.y bisa diatur.")]
     public bool forceTiledDrawMode = true;
-
-    [Tooltip("Warn kalau sprite import setting berpotensi mengganggu tiling.")]
-    public bool warnSpriteImportIssues = true;
 
     private double songStartDspTime;
     private SpriteRenderer mySpriteRenderer;
@@ -41,17 +35,19 @@ public class Note : MonoBehaviour
     public float headHeight = 0.3f;
     public float tailHeight = 0.3f;
 
+    private SpriteRenderer bodySR;
     private SpriteRenderer[] allSpriteRenderers;
 
     void Awake()
     {
         mySpriteRenderer = GetComponent<SpriteRenderer>();
-        if (mySpriteRenderer == null)
+
+        if (body != null)
+            bodySR = body.GetComponent<SpriteRenderer>();
+
+        if (mySpriteRenderer == null && bodySR == null)
         {
-            var childSR = GetComponentInChildren<SpriteRenderer>();
-            if(childSR == null)
-                Debug.LogError("Prefab Note tidak memiliki SpriteRenderer!", this);
-            return;
+            Debug.LogError("Prefab Note tidak memiliki SpriteRenderer!", this);
         }
     }
 
@@ -60,63 +56,67 @@ public class Note : MonoBehaviour
         var spawner = FindFirstObjectByType<SpawnNote>();
         songStartDspTime = spawner != null ? spawner.songStartDspTime : AudioSettings.dspTime;
 
-        // mulai dari posisi spawn
         transform.position = spawnPos;
 
-        // set visual awal (panjang hold, dll)
         SetupVisuals();
 
         if (type == "hold")
         {
             allSpriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-            mySpriteRenderer = null; // tidak pakai root render
-            return;
+            mySpriteRenderer = null;
         }
     }
 
-    /// <summary>
-    /// Atur tampilan awal note.
-    /// Untuk hold: memanjangkan sprite sesuai durasi * kecepatan gerak, dan di-clamp agar tak melewati target.
-    /// Memperhitungkan orientasi (up/down = vertikal; left/right = horizontal).
-    /// </summary>
     public void SetupVisuals()
     {
         if (type == "hold")
         {
-            // pastikan main sprite renderer dimatiin agar tidak dobel
             if (mySpriteRenderer != null)
                 mySpriteRenderer.enabled = false;
 
-            // aktifkan head / body / tail
             if (head != null) head.gameObject.SetActive(true);
             if (body != null) body.gameObject.SetActive(true);
             if (tail != null) tail.gameObject.SetActive(true);
 
+            // === Hitung panjang body ===
             float totalLength = noteMoveSpeed * holdDurationSec;
             float maxDistance = Vector3.Distance(spawnPos, targetPos);
             totalLength = Mathf.Min(totalLength, maxDistance);
 
-            // body length
             float bodyLength = Mathf.Max(0, totalLength - (headHeight + tailHeight));
 
-            // HEAD posisi 0
+            // HEAD di posisi awal
             head.localPosition = Vector3.zero;
 
-            // BODY dibawah head
-            body.localPosition = new Vector3(0, -headHeight * 0.5f, 0);
-            body.localScale = new Vector3(0.5f, bodyLength, 1);
+            // Pastikan SpriteRenderer body siap
+            if (bodySR != null)
+            {
+                // ubah ke mode tiled agar bisa ubah size
+                if (forceTiledDrawMode)
+                    bodySR.drawMode = SpriteDrawMode.Tiled;
 
-            // TAIL paling bawah
+                // atur panjang body lewat size.y
+                Vector2 size = bodySR.size;
+                size.y = bodyLength;
+                bodySR.size = size;
+
+                // reset scale agar tidak ganggu
+                // body.localScale = Vector3.one;
+            }
+
+            // BODY di bawah head
+            body.localPosition = new Vector3(0, -headHeight, 0);
+
+            // TAIL di bawah body
             tail.localPosition = new Vector3(0, -headHeight - bodyLength, 0);
 
             return;
         }
 
-        // NOTE biasa tetap original behaviour mu
+        // === NOTE BIASA ===
         if (mySpriteRenderer != null)
         {
             mySpriteRenderer.enabled = true;
-            Vector2 s = mySpriteRenderer.size;
             mySpriteRenderer.size = new Vector2(1f, 1f);
         }
 
@@ -125,37 +125,39 @@ public class Note : MonoBehaviour
         if (tail != null) tail.gameObject.SetActive(false);
     }
 
-
-    /// <summary>
-    /// Opsional: progress visual saat hold berlangsung (contoh: ganti warna).
-    /// </summary>
     public void UpdateHoldProgress(double songTime)
     {
         if (type != "hold") return;
-    
+
         double holdStartTime = hitTime;
-        double holdEndTime   = hitTime + holdDurationSec;
+        double holdEndTime = hitTime + holdDurationSec;
         float progress = Mathf.Clamp01((float)((songTime - holdStartTime) / (holdEndTime - holdStartTime)));
-    
+
         float totalLength = noteMoveSpeed * holdDurationSec;
         float maxDistance = Vector3.Distance(spawnPos, targetPos);
         totalLength = Mathf.Min(totalLength, maxDistance);
-    
-        float maxBodyLength = Mathf.Max(0, totalLength - (headHeight + tailHeight));
-    
-        float currentBodyLength = maxBodyLength * (1f - progress);
-    
-        // head tetap 0,0,0
-    
-        body.localPosition = new Vector3(0, -headHeight, 0);
-        body.localScale = new Vector3(body.localScale.x, currentBodyLength, 1);
 
-        tail.localPosition = new Vector3(0, -headHeight - currentBodyLength, 0);
-        
-        Color c = Color.Lerp(Color.white, Color.yellow, progress);
-        foreach (var sr in allSpriteRenderers)
+        float maxBodyLength = Mathf.Max(0, totalLength - (headHeight + tailHeight));
+        float currentBodyLength = maxBodyLength * (1f - progress);
+
+        // Atur ulang posisi dan panjang body menggunakan size.y
+        if (bodySR != null)
         {
-            sr.color = c;
+            Vector2 size = bodySR.size;
+            size.y = currentBodyLength;
+            bodySR.size = size;
+        }
+
+        // posisikan ulang body & tail
+        body.localPosition = new Vector3(0, -headHeight, 0);
+        tail.localPosition = new Vector3(0, -headHeight - currentBodyLength, 0);
+
+        // efek warna opsional
+        if (allSpriteRenderers != null)
+        {
+            Color c = Color.Lerp(Color.white, Color.yellow, progress);
+            foreach (var sr in allSpriteRenderers)
+                sr.color = c;
         }
     }
 
@@ -165,7 +167,6 @@ public class Note : MonoBehaviour
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
 
-        // Lerp posisi dari spawn -> target berdasarkan travelDuration & speed
         double effectiveDuration = travelDuration / Mathf.Max(0.001f, speed);
         double spawnTime = hitTime - effectiveDuration;
         double t = (songTime - spawnTime) / effectiveDuration;
@@ -173,7 +174,6 @@ public class Note : MonoBehaviour
 
         transform.position = Vector3.Lerp(spawnPos, targetPos, progress);
 
-        // (Opsional) Update visual progres untuk hold
         if (type == "hold")
             UpdateHoldProgress(songTime);
     }

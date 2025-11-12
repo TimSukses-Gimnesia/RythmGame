@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ef11cd2f86817ef4faa5b911fbfc7ad9
+guid: ffc51c00319202d45ae375deefa2ebc8
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4654568551436747148
-    second: LongNoteConnector_0
+      213: -4685898982717181710
+    second: LongNoteConnector2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -40,19 +40,19 @@ TextureImporter:
     filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
-  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0.864}
+  spritePixelsToUnits: 150
+  spriteBorder: {x: 58, y: 58, z: 58, w: 58}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: LongNoteConnector_0
+      name: LongNoteConnector2_0
       rect:
         serializedVersion: 2
-        x: 91
-        y: 172
-        width: 74
-        height: 74
+        x: 35
+        y: 35
+        width: 186
+        height: 186
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 47e78ec3096a76fb0800000000000000
-      internalID: -4654568551436747148
+      spriteID: 2f037c1c3b758feb0800000000000000
+      internalID: -4685898982717181710
       vertices: []
       indices: 
       edges: []
@@ -138,8 +138,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 1cffd4ccd19e6054bbd35393961cbb39
-    internalID: 0
+    spriteID: 963015c6f4916f94ea7c1a3ca83e5967
+    internalID: 1699989190
     vertices: []
     indices: 
     edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      LongNoteConnector_0: -4654568551436747148
+      LongNoteConnector2_0: -4685898982717181710
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
