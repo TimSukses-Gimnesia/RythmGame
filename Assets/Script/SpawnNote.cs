@@ -15,6 +15,8 @@ public class SpawnNote : MonoBehaviour
 
     [Header("OSU Beatmap")]
     public TextAsset osuBeatmap;
+    private string osuFilePath;
+
     public float extraOffsetSeconds = 0f;
 
     [Header("Spawn Settings")]
@@ -66,6 +68,27 @@ public class SpawnNote : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        // === Load from Beatmap Select Scene ===
+        if (PlayerPrefs.HasKey("SelectedOsuFile"))
+        {
+            osuFilePath = PlayerPrefs.GetString("SelectedOsuFile");
+            Debug.Log("Loading beatmap from file: " + osuFilePath);
+
+            if (File.Exists(osuFilePath))
+            {
+                // Load raw text dari file .osu
+                string osuText = File.ReadAllText(osuFilePath);
+                osuBeatmap = new TextAsset(osuText);
+
+                // Ambil folder untuk audio lookup
+                string beatmapDir = Path.GetDirectoryName(osuFilePath);
+                LoadAudioFromBeatmap(beatmapDir, osuText);
+            }
+            else
+            {
+                Debug.LogWarning("Selected osu file not found, fallback to default TextAsset.");
+            }
+        }
         var chart = OsuBeatmapLoader.Load(osuBeatmap);
         audioLeadInSec = chart.audioLeadInSec;
 
@@ -83,29 +106,70 @@ public class SpawnNote : MonoBehaviour
         audioSource.PlayScheduled(songStartDspTime);
 
         notes = chart.notes;
-        StartCoroutine(CountdownRoutine());
+        StartCoroutine(CountdownThenPlay());
     }
 
-    IEnumerator CountdownRoutine()
+    void LoadAudioFromBeatmap(string beatmapDir, string osuText)
     {
-        float timer = preGameCountdown;
-        while (timer > 0f)
-        {
-            // nanti kamu assign ke UI text kamu sendiri
-            // contoh:
-            // countdownText.text = Mathf.Ceil(timer).ToString();
-            if (countdownText != null)
-                countdownText.text = $"Start in : {Mathf.Ceil(timer).ToString()}";
+        string audioFileName = null;
 
-            timer -= Time.deltaTime;
-            yield return null;
+        foreach (var line in osuText.Split('\n'))
+        {
+            if (line.StartsWith("AudioFilename:"))
+            {
+                audioFileName = line.Substring("AudioFilename:".Length).Trim();
+                break;
+            }
         }
 
-        // setelah countdown habis, kosongkan UI
-        // countdownText.text = "";
-        if (countdownText != null)
-            countdownText.text = "";
+        if (!string.IsNullOrEmpty(audioFileName))
+        {
+            string fullPath = Path.Combine(beatmapDir, audioFileName);
+            Debug.Log("Audio file: " + fullPath);
+
+            if (File.Exists(fullPath))
+            {
+                StartCoroutine(LoadAudioClip(fullPath));
+            }
+            else
+            {
+                Debug.LogWarning("Audio file not found: " + fullPath);
+            }
+        }
     }
+
+    IEnumerator LoadAudioClip(string path)
+    {
+        using (var www = UnityEngine.Networking.UnityWebRequestMultimedia.GetAudioClip("file:///" + path, AudioType.UNKNOWN))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+            {
+                audioSource.clip = UnityEngine.Networking.DownloadHandlerAudioClip.GetContent(www);
+                Debug.Log("Audio loaded successfully.");
+            }
+            else
+            {
+                Debug.LogWarning("Failed to load audio: " + www.error);
+            }
+        }
+    }
+
+
+    IEnumerator CountdownThenPlay()
+    {
+        Debug.Log("Game starting in 3...");
+        yield return new WaitForSeconds(1);
+        Debug.Log("2...");
+        yield return new WaitForSeconds(1);
+        Debug.Log("1...");
+        yield return new WaitForSeconds(1);
+
+        songStartDspTime = AudioSettings.dspTime + 0.1f;
+        audioSource.PlayScheduled(songStartDspTime);
+    }
+
 
 
     // Diperbarui agar note spawn di waktu yang tepat berdasarkan speed-nya
@@ -132,6 +196,13 @@ public class SpawnNote : MonoBehaviour
             }
         }
     }
+
+    void OnDestroy()
+    {
+        PlayerPrefs.DeleteKey("SelectedOsuFile");
+        PlayerPrefs.DeleteKey("SelectedBeatmapPath");
+    }
+
 
     void SpawnOne(OsuBeatmapLoader.OsuNote note, float hitTimeSec, float speedForThisNote, float effectiveTravelDuration)
     {
