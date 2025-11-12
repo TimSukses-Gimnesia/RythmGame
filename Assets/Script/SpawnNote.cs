@@ -223,7 +223,6 @@ public class SpawnNote : MonoBehaviour
 
     void OnSongComplete()
     {
-        Debug.Log("✅ SONG COMPLETE!");
         Time.timeScale = 0f;
 
         var ui = FindFirstObjectByType<LevelCompleteUI>();
