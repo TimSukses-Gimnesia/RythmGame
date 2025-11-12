@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: -4841720520028814253, guid: 729b72c74b759784cbbae5aa0ca67baa, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -105,13 +105,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb0b5ec5d7a34b843bb5ddb3bbd7fd10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Note
+  isHolding: 0
+  holdBroken: 0
   hitTime: 0
   dir: 
+  type: 
+  holdDurationSec: 0
   spawnPos: {x: 0, y: 0, z: 0}
   targetPos: {x: 0, y: 0, z: 0}
   travelDuration: 0
   speed: 1.2
+  noteMoveSpeed: 0
   isHit: 0
+  forceTiledDrawMode: 1
+  warnSpriteImportIssues: 1
+  head: {fileID: 0}
+  body: {fileID: 0}
+  tail: {fileID: 0}
+  headHeight: 0.3
+  tailHeight: 0.3
 --- !u!58 &-5284028751936394003
 CircleCollider2D:
   m_ObjectHideFlags: 0
