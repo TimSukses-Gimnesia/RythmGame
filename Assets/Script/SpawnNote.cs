@@ -223,15 +223,17 @@ public class SpawnNote : MonoBehaviour
 
     void OnSongComplete()
     {
-        Time.timeScale = 0f;
+        Debug.Log("✅ SONG COMPLETE!");
 
+        // Hentikan audio & spawn note
+        isSongReady = false;
+        if (audioSource.isPlaying)
+            audioSource.Stop();
+
+        // Tampilkan UI (tanpa freeze global)
         var ui = FindFirstObjectByType<LevelCompleteUI>();
         if (ui != null)
-        {
-            string beatmapName = GameSession.SelectedBeatmapName ?? Path.GetFileNameWithoutExtension(osuFilePath);
-            ui.ShowLevelComplete(HitJudgement.score, beatmapName);
-        }
-        else Debug.LogWarning("⚠️ LevelCompleteUI not found in scene!");
+            ui.ShowLevelComplete(HitJudgement.score);
     }
 
     public static void FreezeGameplay()
