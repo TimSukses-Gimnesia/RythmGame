@@ -29,7 +29,7 @@ public class BeatmapSelectManager : MonoBehaviour
 #if UNITY_EDITOR
         beatmapFolder = Path.Combine(Application.dataPath, "Beatmaps");
 #else
-        beatmapFolder = Path.Combine(Application.persistentDataPath, "Beatmaps");
+        beatmapFolder = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), "MyRhythmGame/Beatmaps");
 #endif
 
         if (!Directory.Exists(beatmapFolder))
