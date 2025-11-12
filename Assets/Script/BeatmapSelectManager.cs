@@ -167,9 +167,13 @@ public class BeatmapSelectManager : MonoBehaviour
     // --- Fade Animations for expand/collapse ---
     IEnumerator FadeInContainer(GameObject container)
     {
+        VerticalLayoutGroup layout = container.GetComponentInParent<VerticalLayoutGroup>();
+        if (layout) layout.enabled = false; // ⛔ hentikan reflow sementara
+
         CanvasGroup cg = container.GetComponent<CanvasGroup>();
         if (cg == null) cg = container.AddComponent<CanvasGroup>();
         cg.alpha = 0f;
+        container.transform.localScale = Vector3.one * 0.95f;
 
         float t = 0f;
         while (t < 0.25f)
@@ -179,15 +183,29 @@ public class BeatmapSelectManager : MonoBehaviour
             container.transform.localScale = Vector3.Lerp(Vector3.one * 0.95f, Vector3.one, t / 0.25f);
             yield return null;
         }
+
         cg.alpha = 1f;
+        container.transform.localScale = Vector3.one;
+
+        // ✅ Reaktifkan layout setelah animasi selesai
+        if (layout)
+        {
+            layout.enabled = true;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(layout.GetComponent<RectTransform>());
+        }
     }
+
 
     IEnumerator FadeOutContainer(GameObject container)
     {
+        VerticalLayoutGroup layout = container.GetComponentInParent<VerticalLayoutGroup>();
+        if (layout) layout.enabled = false; // ⛔ hentikan layout sementara
+    
         CanvasGroup cg = container.GetComponent<CanvasGroup>();
         if (cg == null) cg = container.AddComponent<CanvasGroup>();
         cg.alpha = 1f;
-
+        container.transform.localScale = Vector3.one;
+    
         float t = 0f;
         while (t < 0.2f)
         {
@@ -196,9 +214,18 @@ public class BeatmapSelectManager : MonoBehaviour
             container.transform.localScale = Vector3.Lerp(Vector3.one, Vector3.one * 0.95f, t / 0.2f);
             yield return null;
         }
-
+    
+        cg.alpha = 0f;
         container.SetActive(false);
+    
+        // ✅ Reaktifkan layout sesudah fade out selesai
+        if (layout)
+        {
+            layout.enabled = true;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(layout.GetComponent<RectTransform>());
+        }
     }
+
 
     // --- Difficulty Buttons ---
     void CreateDifficultyButtons(string folderPath, Transform parent)
