@@ -27,7 +27,7 @@ public class BeatmapSelectManager : MonoBehaviour
     void Start()
     {
 #if UNITY_EDITOR
-        beatmapFolder = @"C:\Users\piosg\Documents\GitHub\Body Frontier\Body Frontier\RythmGame\Assets\Beatmaps";
+        beatmapFolder = @"C:\Users\WINDOWS 11\Documents\GitHub\RythmGame\Assets\Beatmaps";
 #else
         beatmapFolder = Path.Combine(Application.persistentDataPath, "Beatmaps");
 #endif
