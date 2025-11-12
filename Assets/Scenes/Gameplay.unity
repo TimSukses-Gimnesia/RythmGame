@@ -286,6 +286,7 @@ MonoBehaviour:
   holdNoteSpeed: 1
   notePrefab: {fileID: 8946434144321846813, guid: bc4ba45324954044e8c4462b673699f4, type: 3}
   holdNotePrefab: {fileID: 172033478205479233, guid: c821c6c6059d85d4ba08a55ac439ddba, type: 3}
+  obstaclePrefab: {fileID: 461431737137987501, guid: 93866663853f5304ea4869f63ec2b535, type: 3}
   enableTimingCircle: 1
   timingCirclePrefab: {fileID: 9063108433256096780, guid: 3ec9c91ac0737214e929970cf51f0f2a, type: 3}
   effectsParent: {fileID: 0}

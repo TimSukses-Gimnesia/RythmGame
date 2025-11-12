@@ -28,6 +28,7 @@ public class SpawnNote : MonoBehaviour
     [Header("Prefabs")]
     public GameObject notePrefab;
     public GameObject holdNotePrefab;
+    public GameObject obstaclePrefab; // 🧱 NEW: Obstacle prefab
 
     [Header("Timing Circle (Helper)")]
     public bool enableTimingCircle = true;
@@ -51,8 +52,9 @@ public class SpawnNote : MonoBehaviour
     private bool isSongReady = false;
     private bool isGameOver = false;
 
-    // Singleton instance for static calls
     private static SpawnNote instance;
+
+    private int normalNoteCounter = 0; // 🧮 counter untuk menentukan kapan obstacle muncul
 
     void Start()
     {
@@ -83,7 +85,7 @@ public class SpawnNote : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("⚠️ Beatmap file not found or missing from GameSession/PlayerPrefs.");
+            Debug.LogWarning("⚠ Beatmap file not found or missing from GameSession/PlayerPrefs.");
         }
     }
 
@@ -156,14 +158,14 @@ public class SpawnNote : MonoBehaviour
     {
         if (audioSource.clip == null)
         {
-            Debug.LogWarning("⚠️ ScheduleStartAndCountdown() called but clip == null");
+            Debug.LogWarning("⚠ ScheduleStartAndCountdown() called but clip == null");
             return;
         }
 
         songStartDspTime = AudioSettings.dspTime + audioLeadInSec + preGameCountdown;
         isSongReady = true;
 
-        Debug.Log($"▶️ Scheduling playback at DSP {songStartDspTime:F3}");
+        Debug.Log($"▶ Scheduling playback at DSP {songStartDspTime:F3}");
         audioSource.PlayScheduled(songStartDspTime);
         StartCoroutine(CountdownRoutine());
     }
@@ -225,12 +227,10 @@ public class SpawnNote : MonoBehaviour
     {
         Debug.Log("✅ SONG COMPLETE!");
 
-        // Hentikan audio & spawn note
         isSongReady = false;
         if (audioSource.isPlaying)
             audioSource.Stop();
 
-        // Tampilkan UI (tanpa freeze global)
         var ui = FindFirstObjectByType<LevelCompleteUI>();
         if (ui != null)
             ui.ShowLevelComplete(HitJudgement.score);
@@ -299,14 +299,52 @@ public class SpawnNote : MonoBehaviour
             return;
         }
 
-        GameObject prefabToSpawn = (note.type == "hold" && holdNotePrefab != null) ? holdNotePrefab : notePrefab;
-        if (prefabToSpawn == null)
+        // 🧮 Ganti setiap 30 note biasa jadi obstacle
+        GameObject prefabToSpawn = null;
+        if (note.type == "hold")
         {
-            Debug.LogWarning("[SpawnNote] Missing prefab for " + note.type);
-            return;
+            prefabToSpawn = holdNotePrefab;
+        }
+        else
+        {
+            normalNoteCounter++;
+            if (normalNoteCounter >= 30 && obstaclePrefab != null)
+            {
+                prefabToSpawn = obstaclePrefab;
+                normalNoteCounter = 0;
+                Debug.Log("🧱 Obstacle Spawned!");
+                switch (note.dir)
+                {
+                    case "up": spawnPos = upSpawn; targetPos = upTarget; spawnRotation = Quaternion.Euler(0, 0, 0); break;
+                    case "down": spawnPos = downSpawn; targetPos = downTarget; spawnRotation = Quaternion.Euler(0, 0, 180); break;
+                    case "left": spawnPos = leftSpawn; targetPos = leftTarget; spawnRotation = Quaternion.Euler(0, 0, 90); break;
+                    case "right": spawnPos = rightSpawn; targetPos = rightTarget; spawnRotation = Quaternion.Euler(0, 0, -90); break;
+                }
+            }
+            else
+            {
+                prefabToSpawn = notePrefab;
+            }
         }
 
         GameObject obj = Instantiate(prefabToSpawn, spawnPos.position, spawnRotation);
+
+        // 🧱 Jika obstacle
+        if (prefabToSpawn == obstaclePrefab)
+        {
+            var ob = obj.GetComponent<Obstacle>();
+            if (ob != null)
+            {
+                ob.hitTime = hitTimeSec;
+                ob.spawnPos = spawnPos.position;
+                ob.targetPos = targetPos.position;
+                ob.travelDuration = travelDuration;
+                ob.speed = speedForThisNote;
+            }
+            return;
+        }
+
+        // 🎵 Jika note biasa
         var n = obj.GetComponent<Note>();
         if (n == null)
         {
@@ -324,11 +362,11 @@ public class SpawnNote : MonoBehaviour
         n.holdDurationSec = note.holdDurationSec;
 
         float distance = Vector3.Distance(n.spawnPos, n.targetPos);
-        float effectiveDuration = n.travelDuration / Mathf.Max(0.001f, n.speed);
-        n.noteMoveSpeed = distance / effectiveDuration;
+        float effectiveDuration2 = n.travelDuration / Mathf.Max(0.001f, n.speed);
+        n.noteMoveSpeed = distance / effectiveDuration2;
         n.SetupVisuals();
 
-        // Timing circle
+        // ⭕ Timing Circle untuk note biasa saja
         if (enableTimingCircle && timingCirclePrefab != null && note.type != "hold")
         {
             GameObject circleGO = Instantiate(timingCirclePrefab, obj.transform.position, Quaternion.identity, effectsParent);

@@ -11,6 +11,9 @@ public class MainMenuManager : MonoBehaviour
 
     public void OnStartGame()
     {
+        var audioManager = FindFirstObjectByType<MainMenuAudioManager>();
+        if (audioManager != null)
+            audioManager.FadeOutBGM(1.5f);
         SceneManager.LoadScene("BeatmapSelect");
     }
 
