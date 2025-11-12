@@ -21,40 +21,23 @@ public class SpawnNote : MonoBehaviour
 
     [Header("Spawn Settings")]
     [Tooltip("Baseline travel time for speed = 1. Real travel is travelDuration / speedForThisNote")]
-    public float travelDuration = 2.0f;   // detik sebelum hit (untuk speed = 1)
-    public float noteSpeed = 1.0f;        // multiplier (visual)
-    public float holdNoteSpeed = 0.4f;    // multiplier (visual)
+    public float travelDuration = 2.0f;
+    public float noteSpeed = 1.0f;
+    public float holdNoteSpeed = 0.4f;
 
     [Header("Prefabs")]
     public GameObject notePrefab;
     public GameObject holdNotePrefab;
 
-    // -------- NEW: Timing Circle (helper) --------
     [Header("Timing Circle (Helper)")]
-    [Tooltip("Enable/disable timing helper circles for normal (tap) notes.")]
     public bool enableTimingCircle = true;
-
-    [Tooltip("Prefab with SpriteRenderer + TimingCircle script. Leave null to disable.")]
     public GameObject timingCirclePrefab;
-
-    [Tooltip("Optional parent to keep effects out of gameplay hierarchy. Can be left empty.")]
     public Transform effectsParent;
-
-    [Tooltip("Sorting Layer for timing circles (should be same layer as notes).")]
     public string timingCircleSortingLayer = "Default";
-
-    [Tooltip("Sorting Order for timing circles. Use a smaller value than the note so circle renders BEHIND the note.")]
     public int timingCircleSortingOrder = -5;
-
-    [Tooltip("Start scale of the circle when it begins shrinking.")]
     public float timingCircleStartScale = 2.0f;
-
-    [Tooltip("End scale of the circle right at the hit line.")]
     public float timingCircleEndScale = 1.0f;
-
-    [Tooltip("Base color (with alpha) of the circle. You can keep it semi-transparent.")]
     public Color timingCircleColor = new Color(1f, 1f, 1f, 0.25f);
-    // --------------------------------------------
 
     [Header("Lanes")]
     public Transform upSpawn, downSpawn, leftSpawn, rightSpawn;
@@ -64,59 +47,37 @@ public class SpawnNote : MonoBehaviour
     private AudioSource audioSource;
     private List<OsuBeatmapLoader.OsuNote> notes;
     private float audioLeadInSec;
+    private bool isSongReady = false; // ✅ flag untuk memastikan audio sudah siap
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        // === Load from Beatmap Select Scene ===
+
         if (PlayerPrefs.HasKey("SelectedOsuFile"))
         {
             osuFilePath = PlayerPrefs.GetString("SelectedOsuFile");
-            Debug.Log("Loading beatmap from file: " + osuFilePath);
+            Debug.Log("🎵 Loading beatmap from file: " + osuFilePath);
 
             if (File.Exists(osuFilePath))
             {
-                // Load raw text dari file .osu
                 string osuText = File.ReadAllText(osuFilePath);
                 osuBeatmap = new TextAsset(osuText);
 
-                // Ambil folder untuk audio lookup
-                string beatmapDir = Path.GetDirectoryName(osuFilePath);
-                LoadAudioFromBeatmap(beatmapDir, osuText);
-
-                // parse beatmap segera (notes & audioLeadInSec)
                 var chart = OsuBeatmapLoader.Load(osuBeatmap);
                 audioLeadInSec = chart.audioLeadInSec;
                 notes = chart.notes;
 
-                // Jika OsuBeatmapLoader memberikan audioFilename yang mengarah ke Resources,
-                // kita coba muat dari Resources juga (fallback).
-                if (!string.IsNullOrEmpty(chart.audioFilename))
-                {
-                    string clipName = Path.GetFileNameWithoutExtension(chart.audioFilename);
-                    AudioClip clip = Resources.Load<AudioClip>(clipName);
-                    if (clip != null)
-                    {
-                        audioSource.clip = clip;
-                        Debug.Log("Audio loaded from Resources: " + clipName);
-                        // langsung schedule karena clip sudah siap
-                        ScheduleStartAndCountdown();
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Audio clip '" + clipName + "' tidak ditemukan di Resources.");
-                        // nanti coroutine LoadAudioClip akan memanggil ScheduleStartAndCountdown() setelah load
-                    }
-                }
+                string beatmapDir = Path.GetDirectoryName(osuFilePath);
+                LoadAudioFromBeatmap(beatmapDir, osuText);
             }
             else
             {
-                Debug.LogWarning("Selected osu file not found, fallback to default TextAsset.");
+                Debug.LogWarning("⚠️ Selected osu file not found: " + osuFilePath);
             }
         }
         else
         {
-            Debug.LogWarning("No SelectedOsuFile in PlayerPrefs.");
+            Debug.LogWarning("⚠️ No SelectedOsuFile in PlayerPrefs.");
         }
     }
 
@@ -133,29 +94,39 @@ public class SpawnNote : MonoBehaviour
             }
         }
 
-        if (!string.IsNullOrEmpty(audioFileName))
+        if (string.IsNullOrEmpty(audioFileName))
         {
-            string fullPath = Path.Combine(beatmapDir, audioFileName);
-            Debug.Log("Audio file: " + fullPath);
+            Debug.LogError("❌ AudioFilename not found in .osu file.");
+            return;
+        }
 
-            if (File.Exists(fullPath))
+        string fullPath = Path.Combine(beatmapDir, audioFileName);
+
+        // Fallback: jika tidak ada ekstensi .mp3 di nama file
+        if (!File.Exists(fullPath))
+        {
+            string mp3Fallback = fullPath + ".mp3";
+            if (File.Exists(mp3Fallback))
             {
-                StartCoroutine(LoadAudioClip(fullPath));
+                fullPath = mp3Fallback;
+                Debug.Log("🎶 Using .mp3 fallback: " + fullPath);
             }
             else
             {
-                Debug.LogWarning("Audio file not found: " + fullPath);
+                Debug.LogError("❌ Audio file not found at: " + fullPath);
+                return;
             }
         }
-        else
-        {
-            Debug.LogWarning("AudioFilename not found inside .osu file.");
-        }
+
+        Debug.Log("✅ Audio file found at: " + fullPath);
+        StartCoroutine(LoadAudioClip(fullPath));
     }
 
     IEnumerator LoadAudioClip(string path)
     {
-        // pastikan path format file:/// dan backslash -> slash
+        if (countdownText != null)
+            countdownText.text = "Loading Audio...";
+
         string url = "file:///" + path.Replace("\\", "/");
         AudioType type = GetAudioTypeFromExtension(path);
 
@@ -166,33 +137,36 @@ public class SpawnNote : MonoBehaviour
             if (www.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
             {
                 audioSource.clip = UnityEngine.Networking.DownloadHandlerAudioClip.GetContent(www);
-                Debug.Log("Audio loaded successfully from file: " + path);
+                Debug.Log("✅ Audio loaded successfully: " + path);
 
-                // Setelah clip siap, schedule start & countdown
+                if (countdownText != null)
+                    countdownText.text = "";
+
                 ScheduleStartAndCountdown();
             }
             else
             {
-                Debug.LogWarning("Failed to load audio: " + www.error);
+                if (countdownText != null)
+                    countdownText.text = "Failed to load audio.";
+                Debug.LogError("❌ Failed to load audio: " + www.error);
             }
         }
     }
 
-    // Helper: schedule playback and start countdown (dipanggil hanya ketika audioSource.clip sudah ada)
     void ScheduleStartAndCountdown()
     {
         if (audioSource.clip == null)
         {
-            Debug.LogWarning("ScheduleStartAndCountdown() called but audioSource.clip == null");
+            Debug.LogWarning("⚠️ ScheduleStartAndCountdown() called but clip == null");
             return;
         }
 
-        // hitung waktu mulai berdasarkan DSP time + leadin + countdown
         songStartDspTime = AudioSettings.dspTime + audioLeadInSec + preGameCountdown;
-        Debug.Log($"Scheduling playback at DSP {songStartDspTime:F3} (now {AudioSettings.dspTime:F3})");
-        audioSource.PlayScheduled(songStartDspTime);
+        isSongReady = true; // ✅ tandai bahwa audio sudah siap dan waktu sudah valid
 
-        // jalankan countdown UI
+        Debug.Log($"▶️ Scheduling playback at DSP {songStartDspTime:F3} (now {AudioSettings.dspTime:F3})");
+
+        audioSource.PlayScheduled(songStartDspTime);
         StartCoroutine(CountdownRoutine());
     }
 
@@ -211,8 +185,7 @@ public class SpawnNote : MonoBehaviour
         while (timer > 0f)
         {
             if (countdownText != null)
-                countdownText.text = $"Start in : {Mathf.Ceil(timer).ToString()}";
-
+                countdownText.text = $"Start in : {Mathf.Ceil(timer)}";
             timer -= Time.deltaTime;
             yield return null;
         }
@@ -221,27 +194,25 @@ public class SpawnNote : MonoBehaviour
             countdownText.text = "";
     }
 
-    // Diperbarui agar note spawn di waktu yang tepat berdasarkan speed-nya
     void Update()
     {
-        // Jangan spawn note sampai kita sudah menjadwalkan lagu (songStartDspTime valid)
-        if (notes == null || audioSource == null || audioSource.clip == null)
+        // ✅ Jangan spawn note sampai lagu siap (audio sudah load & dijadwalkan)
+        if (!isSongReady || notes == null || audioSource.clip == null)
+        {
+            if (countdownText != null && !string.IsNullOrEmpty(countdownText.text) && countdownText.text != "Loading Audio...")
+                countdownText.text = "Waiting for audio...";
             return;
+        }
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
 
         for (int i = notes.Count - 1; i >= 0; i--)
         {
-            OsuBeatmapLoader.OsuNote note = notes[i];
+            var note = notes[i];
             float hitTimeSec = note.timeSec + extraOffsetSeconds;
-
-            // 1. Tentukan kecepatan note INI
             float speedForThisNote = (note.type == "hold") ? holdNoteSpeed : noteSpeed;
-
-            // 2. Effective travel (hindari div 0)
             float effectiveTravelDuration = travelDuration / Mathf.Max(0.001f, speedForThisNote);
 
-            // 3. Cek kapan spawn
             if (songTime >= hitTimeSec - effectiveTravelDuration)
             {
                 SpawnOne(note, hitTimeSec, speedForThisNote, effectiveTravelDuration);
@@ -256,63 +227,44 @@ public class SpawnNote : MonoBehaviour
         PlayerPrefs.DeleteKey("SelectedBeatmapPath");
     }
 
-
     void SpawnOne(OsuBeatmapLoader.OsuNote note, float hitTimeSec, float speedForThisNote, float effectiveTravelDuration)
     {
-        Transform spawnPos, targetPos;
+        Transform spawnPos = null, targetPos = null;
         Quaternion spawnRotation = Quaternion.identity;
 
         switch (note.dir)
         {
-            case "up":
-                spawnPos = upSpawn; targetPos = upTarget;
-                spawnRotation = Quaternion.Euler(0, 0, 180);
-                break;
-            case "down":
-                spawnPos = downSpawn; targetPos = downTarget;
-                spawnRotation = Quaternion.Euler(0, 0, 0);
-                break;
-            case "left":
-                spawnPos = leftSpawn; targetPos = leftTarget;
-                spawnRotation = Quaternion.Euler(0, 0, -90);
-                break;
-            case "right":
-                spawnPos = rightSpawn; targetPos = rightTarget;
-                spawnRotation = Quaternion.Euler(0, 0, 90);
-                break;
-            default:
-                spawnPos = upSpawn; targetPos = upTarget;
-                break;
+            case "up": spawnPos = upSpawn; targetPos = upTarget; spawnRotation = Quaternion.Euler(0, 0, 180); break;
+            case "down": spawnPos = downSpawn; targetPos = downTarget; spawnRotation = Quaternion.Euler(0, 0, 0); break;
+            case "left": spawnPos = leftSpawn; targetPos = leftTarget; spawnRotation = Quaternion.Euler(0, 0, -90); break;
+            case "right": spawnPos = rightSpawn; targetPos = rightTarget; spawnRotation = Quaternion.Euler(0, 0, 90); break;
         }
 
-        // Safety: if any transform is missing, bail out gracefully
         if (spawnPos == null || targetPos == null)
         {
-            Debug.LogWarning("[SpawnNote] Missing spawn/target transform for dir=" + note.dir);
+            Debug.LogWarning("[SpawnNote] Missing spawn/target for " + note.dir);
             return;
         }
 
-        // --- Spawn NOTE object ---
         GameObject prefabToSpawn = (note.type == "hold" && holdNotePrefab != null) ? holdNotePrefab : notePrefab;
         if (prefabToSpawn == null)
         {
-            Debug.LogWarning("[SpawnNote] Missing note prefab for type=" + note.type);
+            Debug.LogWarning("[SpawnNote] Missing prefab for " + note.type);
             return;
         }
 
         GameObject obj = Instantiate(prefabToSpawn, spawnPos.position, spawnRotation);
-
         var n = obj.GetComponent<Note>();
         if (n == null)
         {
-            Debug.LogError("[SpawnNote] Spawned prefab does not contain Note component!", obj);
+            Debug.LogError("[SpawnNote] Prefab missing Note component!");
             return;
         }
 
         n.hitTime = hitTimeSec;
         n.spawnPos = spawnPos.position;
         n.targetPos = targetPos.position;
-        n.travelDuration = travelDuration; // baseline
+        n.travelDuration = travelDuration;
         n.speed = speedForThisNote;
         n.dir = note.dir;
         n.type = note.type;
@@ -323,28 +275,20 @@ public class SpawnNote : MonoBehaviour
         n.noteMoveSpeed = distance / effectiveDuration;
         n.SetupVisuals();
 
-        // --- NEW: Spawn timing circle for TAP notes only ---
+        // Spawn Timing Circle
         if (enableTimingCircle && timingCirclePrefab != null && note.type != "hold")
         {
-            // World spawn position of the note
-            Vector3 spawnWorldPos = obj.transform.position;
-
-            Transform parentForCircle = effectsParent != null ? effectsParent : null;
-            GameObject circleGO = Instantiate(timingCirclePrefab, spawnWorldPos, Quaternion.identity, parentForCircle);
-
-            // Optional name for debugging
+            GameObject circleGO = Instantiate(timingCirclePrefab, obj.transform.position, Quaternion.identity, effectsParent);
             circleGO.name = "TimingCircle_" + note.dir + "_" + hitTimeSec.ToString("0.000");
 
-            // Renderer settings
             var sr = circleGO.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
                 sr.sortingLayerName = timingCircleSortingLayer;
-                sr.sortingOrder = timingCircleSortingOrder; // behind the note
-                sr.color = timingCircleColor; // base color + alpha in inspector
+                sr.sortingOrder = timingCircleSortingOrder;
+                sr.color = timingCircleColor;
             }
 
-            // Timed behavior configuration
             var tc = circleGO.GetComponent<TimingCircle>();
             if (tc != null)
             {
@@ -352,15 +296,9 @@ public class SpawnNote : MonoBehaviour
                 tc.travelDuration = effectiveTravelDuration;
                 tc.startDsp = songStartDspTime;
                 tc.followTarget = obj.transform;
-
-                // <<< AUTO-SCALE TO NOTE SIZE >>>
-                float noteScale = obj.transform.localScale.x; // your note is (1,1,1), but this makes it future proof
+                float noteScale = obj.transform.localScale.x;
                 tc.startScale = timingCircleStartScale * noteScale;
                 tc.endScale = timingCircleEndScale * noteScale;
-            }
-            else
-            {
-                Debug.LogWarning("[SpawnNote] TimingCircle prefab has no TimingCircle script.");
             }
         }
     }
