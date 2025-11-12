@@ -57,10 +57,7 @@ public class LevelCompleteUI : MonoBehaviour
 
         if (scoreText != null)
         {
-            if (!string.IsNullOrEmpty(beatmapName))
-                scoreText.text = $"{beatmapName}\nYour Score: {finalScore}";
-            else
-                scoreText.text = $"Your Score: {finalScore}";
+            scoreText.text = $"Your Score: {finalScore}";
         }
     }
 
