@@ -83,30 +83,41 @@ public class SpawnNote : MonoBehaviour
                 // Ambil folder untuk audio lookup
                 string beatmapDir = Path.GetDirectoryName(osuFilePath);
                 LoadAudioFromBeatmap(beatmapDir, osuText);
+
+                // parse beatmap segera (notes & audioLeadInSec)
+                var chart = OsuBeatmapLoader.Load(osuBeatmap);
+                audioLeadInSec = chart.audioLeadInSec;
+                notes = chart.notes;
+
+                // Jika OsuBeatmapLoader memberikan audioFilename yang mengarah ke Resources,
+                // kita coba muat dari Resources juga (fallback).
+                if (!string.IsNullOrEmpty(chart.audioFilename))
+                {
+                    string clipName = Path.GetFileNameWithoutExtension(chart.audioFilename);
+                    AudioClip clip = Resources.Load<AudioClip>(clipName);
+                    if (clip != null)
+                    {
+                        audioSource.clip = clip;
+                        Debug.Log("Audio loaded from Resources: " + clipName);
+                        // langsung schedule karena clip sudah siap
+                        ScheduleStartAndCountdown();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Audio clip '" + clipName + "' tidak ditemukan di Resources.");
+                        // nanti coroutine LoadAudioClip akan memanggil ScheduleStartAndCountdown() setelah load
+                    }
+                }
             }
             else
             {
                 Debug.LogWarning("Selected osu file not found, fallback to default TextAsset.");
             }
         }
-        var chart = OsuBeatmapLoader.Load(osuBeatmap);
-        audioLeadInSec = chart.audioLeadInSec;
-
-        if (!string.IsNullOrEmpty(chart.audioFilename))
+        else
         {
-            string clipName = Path.GetFileNameWithoutExtension(chart.audioFilename);
-            AudioClip clip = Resources.Load<AudioClip>(clipName);
-            if (clip != null)
-                audioSource.clip = clip;
-            else
-                Debug.LogWarning("Audio clip '" + clipName + "' tidak ditemukan di Resources.");
+            Debug.LogWarning("No SelectedOsuFile in PlayerPrefs.");
         }
-
-        songStartDspTime = AudioSettings.dspTime + audioLeadInSec + preGameCountdown;
-        audioSource.PlayScheduled(songStartDspTime);
-
-        notes = chart.notes;
-        StartCoroutine(CountdownThenPlay());
     }
 
     void LoadAudioFromBeatmap(string beatmapDir, string osuText)
@@ -136,18 +147,29 @@ public class SpawnNote : MonoBehaviour
                 Debug.LogWarning("Audio file not found: " + fullPath);
             }
         }
+        else
+        {
+            Debug.LogWarning("AudioFilename not found inside .osu file.");
+        }
     }
 
     IEnumerator LoadAudioClip(string path)
     {
-        using (var www = UnityEngine.Networking.UnityWebRequestMultimedia.GetAudioClip("file:///" + path, AudioType.UNKNOWN))
+        // pastikan path format file:/// dan backslash -> slash
+        string url = "file:///" + path.Replace("\\", "/");
+        AudioType type = GetAudioTypeFromExtension(path);
+
+        using (var www = UnityEngine.Networking.UnityWebRequestMultimedia.GetAudioClip(url, type))
         {
             yield return www.SendWebRequest();
 
             if (www.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
             {
                 audioSource.clip = UnityEngine.Networking.DownloadHandlerAudioClip.GetContent(www);
-                Debug.Log("Audio loaded successfully.");
+                Debug.Log("Audio loaded successfully from file: " + path);
+
+                // Setelah clip siap, schedule start & countdown
+                ScheduleStartAndCountdown();
             }
             else
             {
@@ -156,25 +178,56 @@ public class SpawnNote : MonoBehaviour
         }
     }
 
-
-    IEnumerator CountdownThenPlay()
+    // Helper: schedule playback and start countdown (dipanggil hanya ketika audioSource.clip sudah ada)
+    void ScheduleStartAndCountdown()
     {
-        Debug.Log("Game starting in 3...");
-        yield return new WaitForSeconds(1);
-        Debug.Log("2...");
-        yield return new WaitForSeconds(1);
-        Debug.Log("1...");
-        yield return new WaitForSeconds(1);
+        if (audioSource.clip == null)
+        {
+            Debug.LogWarning("ScheduleStartAndCountdown() called but audioSource.clip == null");
+            return;
+        }
 
-        songStartDspTime = AudioSettings.dspTime + 0.1f;
+        // hitung waktu mulai berdasarkan DSP time + leadin + countdown
+        songStartDspTime = AudioSettings.dspTime + audioLeadInSec + preGameCountdown;
+        Debug.Log($"Scheduling playback at DSP {songStartDspTime:F3} (now {AudioSettings.dspTime:F3})");
         audioSource.PlayScheduled(songStartDspTime);
+
+        // jalankan countdown UI
+        StartCoroutine(CountdownRoutine());
     }
 
+    AudioType GetAudioTypeFromExtension(string path)
+    {
+        string ext = Path.GetExtension(path).ToLower();
+        if (ext == ".mp3") return AudioType.MPEG;
+        if (ext == ".ogg") return AudioType.OGGVORBIS;
+        if (ext == ".wav") return AudioType.WAV;
+        return AudioType.UNKNOWN;
+    }
 
+    IEnumerator CountdownRoutine()
+    {
+        float timer = preGameCountdown;
+        while (timer > 0f)
+        {
+            if (countdownText != null)
+                countdownText.text = $"Start in : {Mathf.Ceil(timer).ToString()}";
+
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+
+        if (countdownText != null)
+            countdownText.text = "";
+    }
 
     // Diperbarui agar note spawn di waktu yang tepat berdasarkan speed-nya
     void Update()
     {
+        // Jangan spawn note sampai kita sudah menjadwalkan lagu (songStartDspTime valid)
+        if (notes == null || audioSource == null || audioSource.clip == null)
+            return;
+
         double songTime = AudioSettings.dspTime - songStartDspTime;
 
         for (int i = notes.Count - 1; i >= 0; i--)
