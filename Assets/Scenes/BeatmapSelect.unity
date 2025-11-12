@@ -731,7 +731,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 497976154}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99106807
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1116,8 +1116,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Mapper
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
-  m_sharedMaterial: {fileID: 5731598880491738130, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
+  m_sharedMaterial: {fileID: 1929585930637777459, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1252,8 +1252,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Artist
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
-  m_sharedMaterial: {fileID: 5731598880491738130, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
+  m_sharedMaterial: {fileID: 1929585930637777459, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1397,7 +1397,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00043592963}
+  m_AnchoredPosition: {x: 0, y: -0.000069618225}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1224669353
@@ -1722,8 +1722,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Length
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
-  m_sharedMaterial: {fileID: 5731598880491738130, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
+  m_sharedMaterial: {fileID: 1929585930637777459, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2204,8 +2204,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Judul
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
-  m_sharedMaterial: {fileID: 5731598880491738130, guid: 8416244763dd6cd428201dd214e5f36b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
+  m_sharedMaterial: {fileID: 1929585930637777459, guid: 4b5cb07daceb12441a2256534d9abd02, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

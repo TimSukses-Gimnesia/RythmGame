@@ -9,19 +9,13 @@ public class PlayerMovement : MonoBehaviour
     public List<Transform> movePosition;
 
     [Header("Dash Movement Settings")]
-    [Tooltip("Kecepatan dash ke lane baru (higher = snappier/lebih cepat).")]
     public float dashSpeed = 25f;
-
-    [Tooltip("How close before considered 'snapped' to target lane.")]
     public float snapThreshold = 0.01f;
-
-    [Tooltip("If true, player stays exactly at lane center after dash.")]
     public bool hardSnapToLane = true;
 
     [Header("Game State & Health")]
     public float maxHealth = 100f;
     public float healthDecreaseRate = 2f;
-    public string gameOverSceneName = "GameOverScene";
     private bool isGameOver = false;
 
     private Vector2 moveInput;
@@ -32,7 +26,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
-        // Reset gameplay variables
         HitJudgement.health = maxHealth;
         HitJudgement.score = 0;
         HitJudgement.combo = 0;
@@ -47,22 +40,10 @@ public class PlayerMovement : MonoBehaviour
     {
         moveInput = value.Get<Vector2>();
 
-        if (moveInput.x > 0)
-        {
-            MoveToLane(0); // Right
-        }
-        else if (moveInput.x < 0)
-        {
-            MoveToLane(1); // Left
-        }
-        else if (moveInput.y > 0)
-        {
-            MoveToLane(2); // Up
-        }
-        else if (moveInput.y < 0)
-        {
-            MoveToLane(3); // Down
-        }
+        if (moveInput.x > 0) MoveToLane(0);
+        else if (moveInput.x < 0) MoveToLane(1);
+        else if (moveInput.y > 0) MoveToLane(2);
+        else if (moveInput.y < 0) MoveToLane(3);
     }
 
     void MoveToLane(int laneIndex)
@@ -72,8 +53,6 @@ public class PlayerMovement : MonoBehaviour
 
         currentLane = laneIndex;
         targetPosition = movePosition[laneIndex].position;
-
-        // Compute dash velocity instantly toward target
         dashVelocity = (targetPosition - transform.position).normalized * dashSpeed;
     }
 
@@ -81,12 +60,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isGameOver) return;
 
-        // Dash movement (quick glide)
         if (Vector3.Distance(transform.position, targetPosition) > snapThreshold)
         {
             transform.position += dashVelocity * Time.deltaTime;
-
-            // Overshoot protection
             Vector3 toTarget = targetPosition - transform.position;
             if (Vector3.Dot(toTarget, dashVelocity) <= 0)
             {
@@ -96,7 +72,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (hardSnapToLane && dashVelocity != Vector3.zero)
         {
-            // Stop cleanly on lane
             transform.position = targetPosition;
             dashVelocity = Vector3.zero;
         }
@@ -115,12 +90,11 @@ public class PlayerMovement : MonoBehaviour
         isGameOver = true;
         Debug.Log("GAME OVER!");
 
-        // Find and activate GameOverUI
+        SpawnNote.FreezeGameplay();
+
         var ui = FindFirstObjectByType<GameOverUI>();
         if (ui != null)
-        {
             ui.ShowGameOver(HitJudgement.score);
-        }
         else
         {
             Debug.LogWarning("GameOverUI not found in scene!");

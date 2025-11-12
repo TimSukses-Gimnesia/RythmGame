@@ -44,13 +44,19 @@ public class SpawnNote : MonoBehaviour
     public Transform upTarget, downTarget, leftTarget, rightTarget;
 
     [HideInInspector] public double songStartDspTime;
+
     private AudioSource audioSource;
     private List<OsuBeatmapLoader.OsuNote> notes;
     private float audioLeadInSec;
-    private bool isSongReady = false; // ✅ flag untuk memastikan audio sudah siap
+    private bool isSongReady = false;
+    private bool isGameOver = false;
+
+    // Singleton instance for static calls
+    private static SpawnNote instance;
 
     void Start()
     {
+        instance = this;
         audioSource = GetComponent<AudioSource>();
 
         // Prefer GameSession (if Retry used), fallback to PlayerPrefs
@@ -58,7 +64,7 @@ public class SpawnNote : MonoBehaviour
         if (string.IsNullOrEmpty(osuFilePath) && PlayerPrefs.HasKey("SelectedOsuFile"))
         {
             osuFilePath = PlayerPrefs.GetString("SelectedOsuFile");
-            GameSession.SelectedOsuFile = osuFilePath; // store it back for Retry
+            GameSession.SelectedOsuFile = osuFilePath;
             GameSession.SelectedBeatmapPath = PlayerPrefs.GetString("SelectedBeatmapPath");
         }
 
@@ -84,7 +90,6 @@ public class SpawnNote : MonoBehaviour
     void LoadAudioFromBeatmap(string beatmapDir, string osuText)
     {
         string audioFileName = null;
-
         foreach (var line in osuText.Split('\n'))
         {
             if (line.StartsWith("AudioFilename:"))
@@ -101,8 +106,6 @@ public class SpawnNote : MonoBehaviour
         }
 
         string fullPath = Path.Combine(beatmapDir, audioFileName);
-
-        // Fallback: jika tidak ada ekstensi .mp3 di nama file
         if (!File.Exists(fullPath))
         {
             string mp3Fallback = fullPath + ".mp3";
@@ -138,16 +141,12 @@ public class SpawnNote : MonoBehaviour
             {
                 audioSource.clip = UnityEngine.Networking.DownloadHandlerAudioClip.GetContent(www);
                 Debug.Log("✅ Audio loaded successfully: " + path);
-
-                if (countdownText != null)
-                    countdownText.text = "";
-
+                if (countdownText != null) countdownText.text = "";
                 ScheduleStartAndCountdown();
             }
             else
             {
-                if (countdownText != null)
-                    countdownText.text = "Failed to load audio.";
+                if (countdownText != null) countdownText.text = "Failed to load audio.";
                 Debug.LogError("❌ Failed to load audio: " + www.error);
             }
         }
@@ -162,10 +161,9 @@ public class SpawnNote : MonoBehaviour
         }
 
         songStartDspTime = AudioSettings.dspTime + audioLeadInSec + preGameCountdown;
-        isSongReady = true; // ✅ tandai bahwa audio sudah siap dan waktu sudah valid
+        isSongReady = true;
 
-        Debug.Log($"▶️ Scheduling playback at DSP {songStartDspTime:F3} (now {AudioSettings.dspTime:F3})");
-
+        Debug.Log($"▶️ Scheduling playback at DSP {songStartDspTime:F3}");
         audioSource.PlayScheduled(songStartDspTime);
         StartCoroutine(CountdownRoutine());
     }
@@ -189,23 +187,22 @@ public class SpawnNote : MonoBehaviour
             timer -= Time.deltaTime;
             yield return null;
         }
-
-        if (countdownText != null)
-            countdownText.text = "";
+        if (countdownText != null) countdownText.text = "";
     }
 
     void Update()
     {
-        // ✅ Jangan spawn note sampai lagu siap (audio sudah load & dijadwalkan)
+        if (isGameOver) return;
+
         if (!isSongReady || notes == null || audioSource.clip == null)
         {
-            if (countdownText != null && !string.IsNullOrEmpty(countdownText.text) && countdownText.text != "Loading Audio...")
+            if (countdownText != null && !string.IsNullOrEmpty(countdownText.text) &&
+                countdownText.text != "Loading Audio...")
                 countdownText.text = "Waiting for audio...";
             return;
         }
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
-
         for (int i = notes.Count - 1; i >= 0; i--)
         {
             var note = notes[i];
@@ -220,11 +217,8 @@ public class SpawnNote : MonoBehaviour
             }
         }
 
-        // --- NEW: Detect when song & all notes are done ---
         if (isSongReady && notes.Count == 0 && !audioSource.isPlaying)
-        {
             OnSongComplete();
-        }
     }
 
     void OnSongComplete()
@@ -232,17 +226,57 @@ public class SpawnNote : MonoBehaviour
         Debug.Log("✅ SONG COMPLETE!");
         Time.timeScale = 0f;
 
-        // Find LevelCompleteUI in scene and show it
         var ui = FindFirstObjectByType<LevelCompleteUI>();
         if (ui != null)
         {
             string beatmapName = GameSession.SelectedBeatmapName ?? Path.GetFileNameWithoutExtension(osuFilePath);
             ui.ShowLevelComplete(HitJudgement.score, beatmapName);
         }
-        else
+        else Debug.LogWarning("⚠️ LevelCompleteUI not found in scene!");
+    }
+
+    public static void FreezeGameplay()
+    {
+        if (instance == null)
         {
-            Debug.LogWarning("⚠️ LevelCompleteUI not found in scene!");
+            Debug.LogWarning("❌ SpawnNote instance not found!");
+            return;
         }
+        instance.InternalFreezeGameplay();
+    }
+
+    private void InternalFreezeGameplay()
+    {
+        if (isGameOver) return;
+        isGameOver = true;
+
+        Debug.Log("🧊 [SpawnNote] Freezing notes & audio...");
+        isSongReady = false;
+
+        if (audioSource != null && audioSource.isPlaying)
+            StartCoroutine(FadeOutAudio());
+
+        Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None);
+        foreach (var note in allNotes)
+        {
+            var rb = note.GetComponent<Rigidbody2D>();
+            if (rb != null) rb.simulated = false;
+            note.enabled = false;
+        }
+    }
+
+    private IEnumerator FadeOutAudio(float duration = 1.0f)
+    {
+        float startVol = audioSource.volume;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            audioSource.volume = Mathf.Lerp(startVol, 0f, t / duration);
+            yield return null;
+        }
+        audioSource.Pause();
+        audioSource.volume = startVol;
     }
 
     void SpawnOne(OsuBeatmapLoader.OsuNote note, float hitTimeSec, float speedForThisNote, float effectiveTravelDuration)
@@ -293,11 +327,11 @@ public class SpawnNote : MonoBehaviour
         n.noteMoveSpeed = distance / effectiveDuration;
         n.SetupVisuals();
 
-        // Spawn Timing Circle
+        // Timing circle
         if (enableTimingCircle && timingCirclePrefab != null && note.type != "hold")
         {
             GameObject circleGO = Instantiate(timingCirclePrefab, obj.transform.position, Quaternion.identity, effectsParent);
-            circleGO.name = "TimingCircle_" + note.dir + "_" + hitTimeSec.ToString("0.000");
+            circleGO.name = $"TimingCircle_{note.dir}_{hitTimeSec:0.000}";
 
             var sr = circleGO.GetComponent<SpriteRenderer>();
             if (sr != null)
