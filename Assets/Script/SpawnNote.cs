@@ -219,12 +219,30 @@ public class SpawnNote : MonoBehaviour
                 notes.RemoveAt(i);
             }
         }
+
+        // --- NEW: Detect when song & all notes are done ---
+        if (isSongReady && notes.Count == 0 && !audioSource.isPlaying)
+        {
+            OnSongComplete();
+        }
     }
 
-    void OnDestroy()
+    void OnSongComplete()
     {
-        PlayerPrefs.DeleteKey("SelectedOsuFile");
-        PlayerPrefs.DeleteKey("SelectedBeatmapPath");
+        Debug.Log("✅ SONG COMPLETE!");
+        Time.timeScale = 0f;
+
+        // Find LevelCompleteUI in scene and show it
+        var ui = FindFirstObjectByType<LevelCompleteUI>();
+        if (ui != null)
+        {
+            string beatmapName = GameSession.SelectedBeatmapName ?? Path.GetFileNameWithoutExtension(osuFilePath);
+            ui.ShowLevelComplete(HitJudgement.score, beatmapName);
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ LevelCompleteUI not found in scene!");
+        }
     }
 
     void SpawnOne(OsuBeatmapLoader.OsuNote note, float hitTimeSec, float speedForThisNote, float effectiveTravelDuration)
