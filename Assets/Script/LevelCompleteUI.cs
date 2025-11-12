@@ -1,7 +1,8 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class LevelCompleteUI : MonoBehaviour
 {
@@ -41,6 +42,9 @@ public class LevelCompleteUI : MonoBehaviour
             mainMenuButton.onClick.AddListener(OnMainMenu);
     }
 
+    /// <summary>
+    /// Called by SpawnNote when the song ends successfully.
+    /// </summary>
     public void ShowLevelComplete(int finalScore, string beatmapName = "")
     {
         if (isVisible) return;
@@ -49,7 +53,8 @@ public class LevelCompleteUI : MonoBehaviour
         if (panel != null)
             panel.SetActive(true);
 
-        Time.timeScale = 0f;
+        // Don't freeze entire time system here — just pause gameplay logic elsewhere
+        // Time.timeScale = 0f;
 
         // Update title & score text
         if (titleText != null)
@@ -57,15 +62,18 @@ public class LevelCompleteUI : MonoBehaviour
 
         if (scoreText != null)
         {
-            scoreText.text = $"Your Score: {finalScore}";
+            if (!string.IsNullOrEmpty(beatmapName))
+                scoreText.text = $"{beatmapName}\nYour Score: {finalScore}";
+            else
+                scoreText.text = $"Your Score: {finalScore}";
         }
     }
 
     public void OnRetry()
     {
+        // Ensure normal time before scene transition
         Time.timeScale = 1f;
 
-        // Use GameSession to reload the last beatmap
         if (!string.IsNullOrEmpty(GameSession.SelectedOsuFile))
         {
             SceneManager.LoadScene("Gameplay");
@@ -79,11 +87,18 @@ public class LevelCompleteUI : MonoBehaviour
 
     public void OnMainMenu()
     {
+        // ✅ Fix: Reset time BEFORE loading, and delay one frame to ensure Unity applies it.
         Time.timeScale = 1f;
 
-        // Clear session to avoid reloading the last beatmap next time
+        // Clear session data
         GameSession.Clear();
 
+        StartCoroutine(LoadMainMenuDelayed());
+    }
+
+    private IEnumerator LoadMainMenuDelayed()
+    {
+        yield return null; // Wait one frame to fully restore time system
         SceneManager.LoadScene("MainMenu");
     }
 }
