@@ -250,6 +250,11 @@ public class BeatmapSelectManager : MonoBehaviour
                 Debug.Log("Selected: " + diffName);
                 PlayerPrefs.SetString("SelectedOsuFile", osuPath);
                 PlayerPrefs.SetString("SelectedBeatmapPath", folderPath);
+
+                GameSession.SelectedOsuFile = osuPath;
+                GameSession.SelectedBeatmapPath = folderPath;
+                GameSession.SelectedBeatmapName = diffName;
+
                 SceneManager.LoadScene("Gameplay");
             });
         }

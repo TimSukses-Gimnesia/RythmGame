@@ -3,11 +3,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameOverUI : MonoBehaviour
+public class LevelCompleteUI : MonoBehaviour
 {
     [Header("UI References")]
     public GameObject panel;
     public TMP_Text scoreText;
+    public TMP_Text titleText;
     public Button retryButton;
     public Button mainMenuButton;
 
@@ -16,7 +17,7 @@ public class GameOverUI : MonoBehaviour
     void Awake()
     {
         // Prevent duplicate instances
-        var all = FindObjectsByType<GameOverUI>(FindObjectsSortMode.None);
+        var all = FindObjectsByType<LevelCompleteUI>(FindObjectsSortMode.None);
         if (all.Length > 1)
         {
             Destroy(this);
@@ -25,7 +26,7 @@ public class GameOverUI : MonoBehaviour
 
         // Auto-find panel if missing
         if (panel == null)
-            panel = transform.Find("GameOverPanel")?.gameObject;
+            panel = transform.Find("LevelCompletePanel")?.gameObject;
     }
 
     void Start()
@@ -40,7 +41,7 @@ public class GameOverUI : MonoBehaviour
             mainMenuButton.onClick.AddListener(OnMainMenu);
     }
 
-    public void ShowGameOver(int finalScore)
+    public void ShowLevelComplete(int finalScore, string beatmapName = "")
     {
         if (isVisible) return;
         isVisible = true;
@@ -50,8 +51,17 @@ public class GameOverUI : MonoBehaviour
 
         Time.timeScale = 0f;
 
+        // Update title & score text
+        if (titleText != null)
+            titleText.text = "SONG COMPLETE!";
+
         if (scoreText != null)
-            scoreText.text = $"Your Score: {finalScore}";
+        {
+            if (!string.IsNullOrEmpty(beatmapName))
+                scoreText.text = $"{beatmapName}\nYour Score: {finalScore}";
+            else
+                scoreText.text = $"Your Score: {finalScore}";
+        }
     }
 
     public void OnRetry()
