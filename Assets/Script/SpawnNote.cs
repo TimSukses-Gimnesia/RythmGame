@@ -53,31 +53,31 @@ public class SpawnNote : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
 
-        if (PlayerPrefs.HasKey("SelectedOsuFile"))
+        // Prefer GameSession (if Retry used), fallback to PlayerPrefs
+        osuFilePath = GameSession.SelectedOsuFile;
+        if (string.IsNullOrEmpty(osuFilePath) && PlayerPrefs.HasKey("SelectedOsuFile"))
         {
             osuFilePath = PlayerPrefs.GetString("SelectedOsuFile");
+            GameSession.SelectedOsuFile = osuFilePath; // store it back for Retry
+            GameSession.SelectedBeatmapPath = PlayerPrefs.GetString("SelectedBeatmapPath");
+        }
+
+        if (!string.IsNullOrEmpty(osuFilePath) && File.Exists(osuFilePath))
+        {
             Debug.Log("🎵 Loading beatmap from file: " + osuFilePath);
+            string osuText = File.ReadAllText(osuFilePath);
+            osuBeatmap = new TextAsset(osuText);
 
-            if (File.Exists(osuFilePath))
-            {
-                string osuText = File.ReadAllText(osuFilePath);
-                osuBeatmap = new TextAsset(osuText);
+            var chart = OsuBeatmapLoader.Load(osuBeatmap);
+            audioLeadInSec = chart.audioLeadInSec;
+            notes = chart.notes;
 
-                var chart = OsuBeatmapLoader.Load(osuBeatmap);
-                audioLeadInSec = chart.audioLeadInSec;
-                notes = chart.notes;
-
-                string beatmapDir = Path.GetDirectoryName(osuFilePath);
-                LoadAudioFromBeatmap(beatmapDir, osuText);
-            }
-            else
-            {
-                Debug.LogWarning("⚠️ Selected osu file not found: " + osuFilePath);
-            }
+            string beatmapDir = Path.GetDirectoryName(osuFilePath);
+            LoadAudioFromBeatmap(beatmapDir, osuText);
         }
         else
         {
-            Debug.LogWarning("⚠️ No SelectedOsuFile in PlayerPrefs.");
+            Debug.LogWarning("⚠️ Beatmap file not found or missing from GameSession/PlayerPrefs.");
         }
     }
 
