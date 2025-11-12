@@ -1731,8 +1731,9 @@ MonoBehaviour:
   - {fileID: 1978609200}
   - {fileID: 722416200}
   - {fileID: 0}
-  speed: 1
-  moveInput: {x: 0, y: 0}
+  dashSpeed: 50
+  snapThreshold: 0.01
+  hardSnapToLane: 1
   maxHealth: 100
   healthDecreaseRate: 2
   gameOverSceneName: GameOverScene
