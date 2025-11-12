@@ -25,13 +25,12 @@ public class HitJudgement : MonoBehaviour
     [Header("Hit Effect (VFX)")]
     public GameObject hitEffectPrefab;
     public bool enableHitEffect = true;
-    public Transform effectsParent; // opsional (biar hierarchy rapi)
+    public Transform effectsParent;
     public string effectSortingLayer = "Default";
     public int effectSortingOrder = 20;
 
     private List<Note> notesInTrigger = new List<Note>();
     private SpawnNote spawner;
-
     private Note currentlyHoldingNote = null;
 
     public static int score = 0;
@@ -43,18 +42,21 @@ public class HitJudgement : MonoBehaviour
         spawner = FindFirstObjectByType<SpawnNote>();
     }
 
-    // ---- PATCH: HEALTH CLAMP ----
+    // =============================
+    // ✅ HEALTH MANAGEMENT
+    // =============================
     void ApplyHealth(float delta)
     {
         float maxHP = FindFirstObjectByType<PlayerMovement>()?.maxHealth ?? 100f;
         health = Mathf.Clamp(health + delta, 0f, maxHP);
     }
 
-    // ---- NEW: Spawn Hit Visual Effect ----
+    // =============================
+    // ✅ HIT EFFECT (VISUAL)
+    // =============================
     void SpawnHitEffect(Note note)
     {
-        if (!enableHitEffect) return;
-        if (hitEffectPrefab == null || note == null) return;
+        if (!enableHitEffect || hitEffectPrefab == null || note == null) return;
 
         Vector3 pos = new Vector3(note.targetPos.x, note.targetPos.y, 0f);
         GameObject fx = Instantiate(hitEffectPrefab, pos, Quaternion.identity, effectsParent);
@@ -68,81 +70,93 @@ public class HitJudgement : MonoBehaviour
 
         var ps = fx.GetComponent<ParticleSystem>();
         if (ps != null)
-        {
             Destroy(fx, ps.main.duration + ps.main.startLifetime.constantMax);
-        }
         else
-        {
             Destroy(fx, 1.2f);
-        }
     }
 
+    // =============================
+    // ✅ HIT SOUND (SFX)
+    // =============================
+    void PlayHitSFX(string judgement)
+    {
+        if (SFXManager.Instance == null) return;
+
+        if (judgement == "Perfect" || judgement == "Good")
+            SFXManager.Instance.PlayHit();
+        else if (judgement == "Miss")
+            SFXManager.Instance.PlayMiss();
+        else if (judgement == "BREAK")
+            SFXManager.Instance.PlayComboBreak();
+    }
+
+    // =============================
+    // ✅ JUDGEMENT LOGIC
+    // =============================
     private string GetJudgement(double timeDiff)
     {
         if (timeDiff <= perfectTime) return "Perfect";
         if (timeDiff <= goodTime) return "Good";
         return "Miss";
     }
-    // --- INPUT HELPERS: dukung Arrow + WASD berdasarkan targetDirection ---
+
+    // =============================
+    // ✅ INPUT HANDLER (ARROW + WASD)
+    // =============================
     bool IsLaneKeyPressed()
     {
         if (Keyboard.current == null) return false;
-    
         bool primary = Keyboard.current[targetKey].isPressed;
-    
-        // Alt mapping (WASD) berdasarkan targetDirection
-        bool alt = false;
-        switch (targetDirection)
+        bool alt = targetDirection switch
         {
-            case "up":    alt = Keyboard.current.wKey != null && Keyboard.current.wKey.isPressed; break;
-            case "down":  alt = Keyboard.current.sKey != null && Keyboard.current.sKey.isPressed; break;
-            case "left":  alt = Keyboard.current.aKey != null && Keyboard.current.aKey.isPressed; break;
-            case "right": alt = Keyboard.current.dKey != null && Keyboard.current.dKey.isPressed; break;
-        }
+            "up" => Keyboard.current.wKey?.isPressed ?? false,
+            "down" => Keyboard.current.sKey?.isPressed ?? false,
+            "left" => Keyboard.current.aKey?.isPressed ?? false,
+            "right" => Keyboard.current.dKey?.isPressed ?? false,
+            _ => false
+        };
         return primary || alt;
     }
-    
+
     bool WasLaneKeyPressedThisFrame()
     {
         if (Keyboard.current == null) return false;
-    
         bool primary = Keyboard.current[targetKey].wasPressedThisFrame;
-    
-        bool alt = false;
-        switch (targetDirection)
+        bool alt = targetDirection switch
         {
-            case "up":    alt = Keyboard.current.wKey != null && Keyboard.current.wKey.wasPressedThisFrame; break;
-            case "down":  alt = Keyboard.current.sKey != null && Keyboard.current.sKey.wasPressedThisFrame; break;
-            case "left":  alt = Keyboard.current.aKey != null && Keyboard.current.aKey.wasPressedThisFrame; break;
-            case "right": alt = Keyboard.current.dKey != null && Keyboard.current.dKey.wasPressedThisFrame; break;
-        }
+            "up" => Keyboard.current.wKey?.wasPressedThisFrame ?? false,
+            "down" => Keyboard.current.sKey?.wasPressedThisFrame ?? false,
+            "left" => Keyboard.current.aKey?.wasPressedThisFrame ?? false,
+            "right" => Keyboard.current.dKey?.wasPressedThisFrame ?? false,
+            _ => false
+        };
         return primary || alt;
     }
-    
+
     bool WasLaneKeyReleasedThisFrame()
     {
         if (Keyboard.current == null) return false;
-    
         bool primary = Keyboard.current[targetKey].wasReleasedThisFrame;
-    
-        bool alt = false;
-        switch (targetDirection)
+        bool alt = targetDirection switch
         {
-            case "up":    alt = Keyboard.current.wKey != null && Keyboard.current.wKey.wasReleasedThisFrame; break;
-            case "down":  alt = Keyboard.current.sKey != null && Keyboard.current.sKey.wasReleasedThisFrame; break;
-            case "left":  alt = Keyboard.current.aKey != null && Keyboard.current.aKey.wasReleasedThisFrame; break;
-            case "right": alt = Keyboard.current.dKey != null && Keyboard.current.dKey.wasReleasedThisFrame; break;
-        }
+            "up" => Keyboard.current.wKey?.wasReleasedThisFrame ?? false,
+            "down" => Keyboard.current.sKey?.wasReleasedThisFrame ?? false,
+            "left" => Keyboard.current.aKey?.wasReleasedThisFrame ?? false,
+            "right" => Keyboard.current.dKey?.wasReleasedThisFrame ?? false,
+            _ => false
+        };
         return primary || alt;
     }
 
+    // =============================
+    // ✅ UPDATE LOOP
+    // =============================
     void Update()
     {
-        if (spawner == null) return;
-        if (spawner.songStartDspTime == 0.0) return;
-
+        if (spawner == null || spawner.songStartDspTime == 0.0) return;
         double songTime = AudioSettings.dspTime - spawner.songStartDspTime;
 
+        // --- auto MISS jika lewat timing window ---
         while (notesInTrigger.Count > 0 && songTime > notesInTrigger[0].hitTime + goodTime)
         {
             Note noteToMiss = notesInTrigger[0];
@@ -150,46 +164,37 @@ public class HitJudgement : MonoBehaviour
             HandleMiss(noteToMiss);
         }
 
+        // --- handle HOLD note ---
         if (currentlyHoldingNote != null)
         {
             double holdEndTime = currentlyHoldingNote.hitTime + currentlyHoldingNote.holdDurationSec;
-        
-            // sedang ditekan: teruskan progress sampai selesai
+
             if (IsLaneKeyPressed())
             {
                 if (!currentlyHoldingNote.isHolding)
                     currentlyHoldingNote.isHolding = true;
-        
+
                 if (songTime >= holdEndTime)
-                {
-                    // sukses mencapai tail (selesai)
                     HandleHoldJudgement(true, currentlyHoldingNote);
-                }
                 else
-                {
-                    // update visual shrink selama ditahan
                     currentlyHoldingNote.UpdateHoldProgress(songTime);
-                }
             }
-        
-            // dilepas di frame ini?
+
             if (WasLaneKeyReleasedThisFrame())
             {
                 if (songTime < holdEndTime - goodTime)
                 {
-                    // lepas sebelum selesai → BREAK (bukan miss total)
                     currentlyHoldingNote.holdBroken = true;
                     HandleHoldJudgement(false, currentlyHoldingNote);
                 }
                 else
                 {
-                    // release tepat/di akhir → success
                     HandleHoldJudgement(true, currentlyHoldingNote);
                 }
             }
         }
 
-
+        // --- handle single tap notes ---
         if (currentlyHoldingNote == null && WasLaneKeyPressedThisFrame())
         {
             if (notesInTrigger.Count > 0)
@@ -197,7 +202,7 @@ public class HitJudgement : MonoBehaviour
                 Note noteToHit = notesInTrigger[0];
                 double timeDiff = System.Math.Abs(songTime - noteToHit.hitTime);
                 string judgement = GetJudgement(timeDiff);
-        
+
                 if (judgement != "Miss")
                 {
                     if (noteToHit.type == "hold")
@@ -205,8 +210,6 @@ public class HitJudgement : MonoBehaviour
                         currentlyHoldingNote = noteToHit;
                         notesInTrigger.RemoveAt(0);
                         HandleHit(judgement, noteToHit, false);
-        
-                        // set status hold aktif dari awal
                         noteToHit.isHolding = true;
                     }
                     else
@@ -222,14 +225,14 @@ public class HitJudgement : MonoBehaviour
                 }
             }
         }
-
     }
 
-    // ---- PATCHED HandleHit ----
+    // =============================
+    // ✅ HANDLE HIT
+    // =============================
     void HandleHit(string judgement, Note note, bool destroyNote)
     {
         combo++;
-
         int baseScore = (judgement == "Perfect") ? 200 : (judgement == "Good" ? 50 : 0);
 
         if (judgement == "Perfect") ApplyHealth(perfectHealthGain);
@@ -239,14 +242,16 @@ public class HitJudgement : MonoBehaviour
         popup.gameObject.SetActive(true);
 
         score += baseScore * combo;
-
-        SpawnHitEffect(note); // <---- efek hit DI SINI
+        SpawnHitEffect(note);
+        PlayHitSFX(judgement); // 🔊 play SFX
 
         note.isHit = true;
         if (destroyNote) Destroy(note.gameObject);
     }
 
-    // ---- PATCHED HandleHoldJudgement ----
+    // =============================
+    // ✅ HANDLE HOLD
+    // =============================
     void HandleHoldJudgement(bool success, Note note)
     {
         if (success)
@@ -255,14 +260,15 @@ public class HitJudgement : MonoBehaviour
             score += 150 * combo;
             ApplyHealth(holdSuccessGain);
             popup.Setup("HOLD OK!", Color.yellow);
-
-            SpawnHitEffect(note); // <---- efek hold selesai DI SINI
+            SpawnHitEffect(note);
+            PlayHitSFX("Good"); // gunakan suara hit biasa
         }
         else
         {
             combo = 0;
             ApplyHealth(-holdBreakPenalty);
             popup.Setup("BREAK", Color.red);
+            PlayHitSFX("BREAK"); // gunakan suara miss/combo break
         }
 
         popup.gameObject.SetActive(true);
@@ -270,10 +276,12 @@ public class HitJudgement : MonoBehaviour
         currentlyHoldingNote = null;
     }
 
+    // =============================
+    // ✅ HANDLE MISS
+    // =============================
     void HandleMiss(Note note)
     {
         if (note == null || note.isHit) return;
-
         if (note == currentlyHoldingNote) currentlyHoldingNote = null;
 
         popup.Setup("MISS", Color.red);
@@ -281,11 +289,15 @@ public class HitJudgement : MonoBehaviour
 
         combo = 0;
         ApplyHealth(-missHealthPenalty);
+        PlayHitSFX("Miss"); // 🔊 suara miss
 
         note.isHit = true;
         Destroy(note.gameObject);
     }
 
+    // =============================
+    // ✅ COLLISION DETECTION
+    // =============================
     private void OnTriggerEnter2D(Collider2D other)
     {
         Note note = other.GetComponent<Note>();
