@@ -56,7 +56,7 @@ public class SpawnNote : MonoBehaviour
     private List<OsuBeatmapLoader.OsuNote> notes;
     private float audioLeadInSec;
     private bool isSongReady = false;
-    private bool isGameOver = false;
+    public bool isGameOver = false;
     private static SpawnNote instance;
     private int normalNoteCounter = 0;
 

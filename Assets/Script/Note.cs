@@ -254,7 +254,7 @@ public class Note : MonoBehaviour
 
                 // Gunakan Easing agar gerakan lebih luwes (Slow in - Fast Out - Slow In)
                 float tEased = Mathf.SmoothStep(0f, 1f, tLinear);
-
+                    
                 // --- POSISI ---
                 Vector3 posOnFake = Vector3.Lerp(fakeSpawnPos, fakeTargetPos, progress);
                 Vector3 posOnReal = Vector3.Lerp(spawnPos, targetPos, progress);
