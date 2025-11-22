@@ -1,8 +1,9 @@
 using UnityEngine;
+using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Collections;
-using TMPro;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(AudioSource))]
 public class SpawnNote : MonoBehaviour
@@ -16,76 +17,70 @@ public class SpawnNote : MonoBehaviour
     [Header("OSU Beatmap")]
     public TextAsset osuBeatmap;
     private string osuFilePath;
-
     public float extraOffsetSeconds = 0f;
 
     [Header("Spawn Settings")]
-    [Tooltip("Baseline travel time for speed = 1. Real travel is travelDuration / speedForThisNote")]
     public float travelDuration = 2.0f;
     public float noteSpeed = 1.0f;
     public float holdNoteSpeed = 0.4f;
 
-    [Header("Prefabs")]
-    public GameObject notePrefab;
-    public GameObject holdNotePrefab;
-    public GameObject obstaclePrefab; // 🧱 NEW: Obstacle prefab
+   
+    [Header("Phantom (Slide) Logic")]
+    [Range(0f, 1f)] public float phantomChance = 0.3f;
+    public float phantomSmoothness = 0.2f;
 
-    [Header("Timing Circle (Helper)")]
+    [Header("Ghost Hold (Fade) Logic")]
+    [Range(0f, 1f)] public float ghostHoldChance = 0.4f;
+    public float ghostFadeSpeed = 5.0f;
+    // ==========================================
+
+    [Header("Prefabs")]
+    public GameObject normalNotePrefab;
+    public GameObject phantomNotePrefab;
+    public GameObject holdNotePrefab;
+    public GameObject obstaclePrefab;
+
+    [Header("Timing Circle")]
     public bool enableTimingCircle = true;
     public GameObject timingCirclePrefab;
     public Transform effectsParent;
-    public string timingCircleSortingLayer = "Default";
-    public int timingCircleSortingOrder = -5;
     public float timingCircleStartScale = 2.0f;
     public float timingCircleEndScale = 1.0f;
-    public Color timingCircleColor = new Color(1f, 1f, 1f, 0.25f);
 
     [Header("Lanes")]
     public Transform upSpawn, downSpawn, leftSpawn, rightSpawn;
     public Transform upTarget, downTarget, leftTarget, rightTarget;
 
     [HideInInspector] public double songStartDspTime;
-
     private AudioSource audioSource;
     private List<OsuBeatmapLoader.OsuNote> notes;
     private float audioLeadInSec;
     private bool isSongReady = false;
     private bool isGameOver = false;
-
     private static SpawnNote instance;
-
-    private int normalNoteCounter = 0; // 🧮 counter untuk menentukan kapan obstacle muncul
+    private int normalNoteCounter = 0;
 
     void Start()
     {
         instance = this;
         audioSource = GetComponent<AudioSource>();
 
-        // Prefer GameSession (if Retry used), fallback to PlayerPrefs
         osuFilePath = GameSession.SelectedOsuFile;
         if (string.IsNullOrEmpty(osuFilePath) && PlayerPrefs.HasKey("SelectedOsuFile"))
         {
             osuFilePath = PlayerPrefs.GetString("SelectedOsuFile");
             GameSession.SelectedOsuFile = osuFilePath;
-            GameSession.SelectedBeatmapPath = PlayerPrefs.GetString("SelectedBeatmapPath");
         }
 
         if (!string.IsNullOrEmpty(osuFilePath) && File.Exists(osuFilePath))
         {
-            Debug.Log("🎵 Loading beatmap from file: " + osuFilePath);
             string osuText = File.ReadAllText(osuFilePath);
             osuBeatmap = new TextAsset(osuText);
-
             var chart = OsuBeatmapLoader.Load(osuBeatmap);
             audioLeadInSec = chart.audioLeadInSec;
             notes = chart.notes;
-
             string beatmapDir = Path.GetDirectoryName(osuFilePath);
             LoadAudioFromBeatmap(beatmapDir, osuText);
-        }
-        else
-        {
-            Debug.LogWarning("⚠ Beatmap file not found or missing from GameSession/PlayerPrefs.");
         }
     }
 
@@ -100,83 +95,40 @@ public class SpawnNote : MonoBehaviour
                 break;
             }
         }
-
-        if (string.IsNullOrEmpty(audioFileName))
-        {
-            Debug.LogError("❌ AudioFilename not found in .osu file.");
-            return;
-        }
+        if (string.IsNullOrEmpty(audioFileName)) return;
 
         string fullPath = Path.Combine(beatmapDir, audioFileName);
         if (!File.Exists(fullPath))
         {
-            string mp3Fallback = fullPath + ".mp3";
-            if (File.Exists(mp3Fallback))
-            {
-                fullPath = mp3Fallback;
-                Debug.Log("🎶 Using .mp3 fallback: " + fullPath);
-            }
-            else
-            {
-                Debug.LogError("❌ Audio file not found at: " + fullPath);
-                return;
-            }
+            string mp3 = fullPath + ".mp3";
+            if (File.Exists(mp3)) fullPath = mp3; else return;
         }
-
-        Debug.Log("✅ Audio file found at: " + fullPath);
         StartCoroutine(LoadAudioClip(fullPath));
     }
 
     IEnumerator LoadAudioClip(string path)
     {
-        if (countdownText != null)
-            countdownText.text = "Loading Audio...";
-
+        if (countdownText != null) countdownText.text = "Loading Audio...";
         string url = "file:///" + path.Replace("\\", "/");
-        AudioType type = GetAudioTypeFromExtension(path);
-
-        using (var www = UnityEngine.Networking.UnityWebRequestMultimedia.GetAudioClip(url, type))
+        using (var www = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.UNKNOWN))
         {
             yield return www.SendWebRequest();
-
-            if (www.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+            if (www.result == UnityWebRequest.Result.Success)
             {
-                audioSource.clip = UnityEngine.Networking.DownloadHandlerAudioClip.GetContent(www);
-                Debug.Log("✅ Audio loaded successfully: " + path);
+                audioSource.clip = DownloadHandlerAudioClip.GetContent(www);
                 if (countdownText != null) countdownText.text = "";
                 ScheduleStartAndCountdown();
-            }
-            else
-            {
-                if (countdownText != null) countdownText.text = "Failed to load audio.";
-                Debug.LogError("❌ Failed to load audio: " + www.error);
             }
         }
     }
 
     void ScheduleStartAndCountdown()
     {
-        if (audioSource.clip == null)
-        {
-            Debug.LogWarning("⚠ ScheduleStartAndCountdown() called but clip == null");
-            return;
-        }
-
+        if (audioSource.clip == null) return;
         songStartDspTime = AudioSettings.dspTime + audioLeadInSec + preGameCountdown;
         isSongReady = true;
-
-        Debug.Log($"▶ Scheduling playback at DSP {songStartDspTime:F3}");
         audioSource.PlayScheduled(songStartDspTime);
         StartCoroutine(CountdownRoutine());
-    }
-
-    AudioType GetAudioTypeFromExtension(string path)
-    {
-        string ext = Path.GetExtension(path).ToLower();
-        if (ext == ".mp3") return AudioType.MPEG;
-        if (ext == ".ogg") return AudioType.OGGVORBIS;
-        if (ext == ".wav") return AudioType.WAV;
-        return AudioType.UNKNOWN;
     }
 
     IEnumerator CountdownRoutine()
@@ -184,8 +136,7 @@ public class SpawnNote : MonoBehaviour
         float timer = preGameCountdown;
         while (timer > 0f)
         {
-            if (countdownText != null)
-                countdownText.text = $"Start in : {Mathf.Ceil(timer)}";
+            if (countdownText != null) countdownText.text = $"Start in : {Mathf.Ceil(timer)}";
             timer -= Time.deltaTime;
             yield return null;
         }
@@ -194,15 +145,7 @@ public class SpawnNote : MonoBehaviour
 
     void Update()
     {
-        if (isGameOver) return;
-
-        if (!isSongReady || notes == null || audioSource.clip == null)
-        {
-            if (countdownText != null && !string.IsNullOrEmpty(countdownText.text) &&
-                countdownText.text != "Loading Audio...")
-                countdownText.text = "Waiting for audio...";
-            return;
-        }
+        if (isGameOver || !isSongReady || notes == null || audioSource.clip == null) return;
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
         for (int i = notes.Count - 1; i >= 0; i--)
@@ -218,92 +161,66 @@ public class SpawnNote : MonoBehaviour
                 notes.RemoveAt(i);
             }
         }
-
-        if (isSongReady && notes.Count == 0 && !audioSource.isPlaying)
-            OnSongComplete();
+        if (isSongReady && notes.Count == 0 && !audioSource.isPlaying) OnSongComplete();
     }
 
     void OnSongComplete()
     {
-        Debug.Log("✅ SONG COMPLETE!");
-
         isSongReady = false;
-        if (audioSource.isPlaying)
-            audioSource.Stop();
-
         var ui = FindFirstObjectByType<LevelCompleteUI>();
-        if (ui != null)
-            ui.ShowLevelComplete(HitJudgement.score);
+        if (ui != null) ui.ShowLevelComplete(HitJudgement.score);
     }
 
     public static void FreezeGameplay()
     {
-        if (instance == null)
-        {
-            Debug.LogWarning("❌ SpawnNote instance not found!");
-            return;
-        }
-        instance.InternalFreezeGameplay();
+        if (instance != null) instance.InternalFreezeGameplay();
     }
 
     private void InternalFreezeGameplay()
     {
         if (isGameOver) return;
         isGameOver = true;
-
-        Debug.Log("🧊 [SpawnNote] Freezing notes & audio...");
         isSongReady = false;
-
-        if (audioSource != null && audioSource.isPlaying)
-            StartCoroutine(FadeOutAudio());
-
+        if (audioSource != null) audioSource.Stop();
         Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None);
-        foreach (var note in allNotes)
-        {
-            var rb = note.GetComponent<Rigidbody2D>();
-            if (rb != null) rb.simulated = false;
-            note.enabled = false;
-        }
+        foreach (var note in allNotes) note.enabled = false;
     }
 
-    private IEnumerator FadeOutAudio(float duration = 1.0f)
-    {
-        float startVol = audioSource.volume;
-        float t = 0f;
-        while (t < duration)
-        {
-            t += Time.unscaledDeltaTime;
-            audioSource.volume = Mathf.Lerp(startVol, 0f, t / duration);
-            yield return null;
-        }
-        audioSource.Pause();
-        audioSource.volume = startVol;
-    }
 
     void SpawnOne(OsuBeatmapLoader.OsuNote note, float hitTimeSec, float speedForThisNote, float effectiveTravelDuration)
     {
-        Transform spawnPos = null, targetPos = null;
-        Quaternion spawnRotation = Quaternion.identity;
+        Transform realSpawn = null, realTarget = null;
 
+    
         switch (note.dir)
         {
-            case "up": spawnPos = upSpawn; targetPos = upTarget; spawnRotation = Quaternion.Euler(0, 0, 180); break;
-            case "down": spawnPos = downSpawn; targetPos = downTarget; spawnRotation = Quaternion.Euler(0, 0, 0); break;
-            case "left": spawnPos = leftSpawn; targetPos = leftTarget; spawnRotation = Quaternion.Euler(0, 0, -90); break;
-            case "right": spawnPos = rightSpawn; targetPos = rightTarget; spawnRotation = Quaternion.Euler(0, 0, 90); break;
+            case "up": realSpawn = upSpawn; realTarget = upTarget; break;
+            case "down": realSpawn = downSpawn; realTarget = downTarget; break;
+            case "left": realSpawn = leftSpawn; realTarget = leftTarget; break;
+            case "right": realSpawn = rightSpawn; realTarget = rightTarget; break;
         }
 
-        if (spawnPos == null || targetPos == null)
-        {
-            Debug.LogWarning("[SpawnNote] Missing spawn/target for " + note.dir);
-            return;
-        }
+        if (realSpawn == null || realTarget == null) return;
 
-        // 🧮 Ganti setiap 30 note biasa jadi obstacle
+        Quaternion realRotation = GetRotationForSpawn(realSpawn);
+
+        // 2. Hitung Peluang Ghost/Phantom
+        bool tryGhostHold = (note.type == "hold") && (Random.value < ghostHoldChance);
+        bool tryPhantomSlide = (note.type != "hold") && (Random.value < phantomChance);
+
+        // 3. Pilih Prefab & Setting Awal
         GameObject prefabToSpawn = null;
+        Transform fakeSpawnTransform = null;
+        Transform fakeTargetTransform = null;
+        Quaternion spawnRotation = realRotation; // Default rotasi asli
+
         if (note.type == "hold")
         {
             prefabToSpawn = holdNotePrefab;
+        }
+        else if (tryPhantomSlide && phantomNotePrefab != null)
+        {
+            prefabToSpawn = phantomNotePrefab;
         }
         else
         {
@@ -312,74 +229,88 @@ public class SpawnNote : MonoBehaviour
             {
                 prefabToSpawn = obstaclePrefab;
                 normalNoteCounter = 0;
-                Debug.Log("🧱 Obstacle Spawned!");
-                switch (note.dir)
-                {
-                    case "up": spawnPos = upSpawn; targetPos = upTarget; spawnRotation = Quaternion.Euler(0, 0, 0); break;
-                    case "down": spawnPos = downSpawn; targetPos = downTarget; spawnRotation = Quaternion.Euler(0, 0, 180); break;
-                    case "left": spawnPos = leftSpawn; targetPos = leftTarget; spawnRotation = Quaternion.Euler(0, 0, 90); break;
-                    case "right": spawnPos = rightSpawn; targetPos = rightTarget; spawnRotation = Quaternion.Euler(0, 0, -90); break;
-                }
             }
             else
             {
-                prefabToSpawn = notePrefab;
+                prefabToSpawn = normalNotePrefab;
             }
         }
 
-        GameObject obj = Instantiate(prefabToSpawn, spawnPos.position, spawnRotation);
+        // 🔥 Jika Ghost/Phantom, cari jalur palsu & GUNAKAN ROTASI PALSU untuk spawn awal
+        if (tryGhostHold || tryPhantomSlide)
+        {
+            fakeSpawnTransform = GetRandomOtherSpawn(note.dir);
+            fakeTargetTransform = GetCorrespondingTarget(fakeSpawnTransform);
 
-        // 🧱 Jika obstacle
+            // Ubah rotasi spawn jadi rotasi jalur palsu agar visual tidak aneh saat muncul
+            spawnRotation = GetRotationForSpawn(fakeSpawnTransform);
+        }
+
+        GameObject obj = Instantiate(prefabToSpawn, realSpawn.position, spawnRotation);
+
         if (prefabToSpawn == obstaclePrefab)
         {
             var ob = obj.GetComponent<Obstacle>();
             if (ob != null)
             {
                 ob.hitTime = hitTimeSec;
-                ob.spawnPos = spawnPos.position;
-                ob.targetPos = targetPos.position;
+                ob.spawnPos = realSpawn.position;
+                ob.targetPos = realTarget.position;
                 ob.travelDuration = travelDuration;
                 ob.speed = speedForThisNote;
             }
             return;
         }
 
-        // 🎵 Jika note biasa
         var n = obj.GetComponent<Note>();
-        if (n == null)
+        if (n == null) return;
+
+    
+        n.targetRotation = realRotation;
+
+        if (tryGhostHold)
         {
-            Debug.LogError("[SpawnNote] Prefab missing Note component!");
-            return;
+            n.isGhostHold = true;
+            n.isPhantom = false;
+            n.ghostSwitchPoint = 0.5f;
+            n.fadeSpeed = ghostFadeSpeed;
+
+            n.fakeSpawnPos = fakeSpawnTransform.position;
+            n.fakeTargetPos = fakeTargetTransform.position;
+        }
+        else if (tryPhantomSlide)
+        {
+            n.isPhantom = true;
+            n.isGhostHold = false;
+            n.switchThreshold = Random.Range(0.4f, 0.6f);
+            n.transitionDuration = phantomSmoothness;
+
+            n.fakeSpawnPos = fakeSpawnTransform.position;
+            n.fakeTargetPos = fakeTargetTransform.position;
+        }
+        else
+        {
+            n.isPhantom = false;
+            n.isGhostHold = false;
         }
 
         n.hitTime = hitTimeSec;
-        n.spawnPos = spawnPos.position;
-        n.targetPos = targetPos.position;
+        n.spawnPos = realSpawn.position;
+        n.targetPos = realTarget.position;
         n.travelDuration = travelDuration;
         n.speed = speedForThisNote;
         n.dir = note.dir;
         n.type = note.type;
         n.holdDurationSec = note.holdDurationSec;
 
-        float distance = Vector3.Distance(n.spawnPos, n.targetPos);
-        float effectiveDuration2 = n.travelDuration / Mathf.Max(0.001f, n.speed);
-        n.noteMoveSpeed = distance / effectiveDuration2;
+        float d = Vector3.Distance(n.spawnPos, n.targetPos);
+        n.noteMoveSpeed = d / effectiveTravelDuration;
+
         n.SetupVisuals();
 
-        // ⭕ Timing Circle untuk note biasa saja
         if (enableTimingCircle && timingCirclePrefab != null && note.type != "hold")
         {
             GameObject circleGO = Instantiate(timingCirclePrefab, obj.transform.position, Quaternion.identity, effectsParent);
-            circleGO.name = $"TimingCircle_{note.dir}_{hitTimeSec:0.000}";
-
-            var sr = circleGO.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                sr.sortingLayerName = timingCircleSortingLayer;
-                sr.sortingOrder = timingCircleSortingOrder;
-                sr.color = timingCircleColor;
-            }
-
             var tc = circleGO.GetComponent<TimingCircle>();
             if (tc != null)
             {
@@ -392,5 +323,34 @@ public class SpawnNote : MonoBehaviour
                 tc.endScale = timingCircleEndScale * noteScale;
             }
         }
+    }
+
+    
+    Quaternion GetRotationForSpawn(Transform spawnTransform)
+    {
+        if (spawnTransform == upSpawn) return Quaternion.Euler(0, 0, 180);
+        if (spawnTransform == downSpawn) return Quaternion.Euler(0, 0, 0);
+        if (spawnTransform == leftSpawn) return Quaternion.Euler(0, 0, -90);
+        if (spawnTransform == rightSpawn) return Quaternion.Euler(0, 0, 90);
+        return Quaternion.identity;
+    }
+
+    Transform GetRandomOtherSpawn(string originalDir)
+    {
+        List<Transform> o = new List<Transform>();
+        if (originalDir != "up") o.Add(upSpawn);
+        if (originalDir != "down") o.Add(downSpawn);
+        if (originalDir != "left") o.Add(leftSpawn);
+        if (originalDir != "right") o.Add(rightSpawn);
+        return o[Random.Range(0, o.Count)];
+    }
+
+    Transform GetCorrespondingTarget(Transform t)
+    {
+        if (t == upSpawn) return upTarget;
+        if (t == downSpawn) return downTarget;
+        if (t == leftSpawn) return leftTarget;
+        if (t == rightSpawn) return rightTarget;
+        return null;
     }
 }

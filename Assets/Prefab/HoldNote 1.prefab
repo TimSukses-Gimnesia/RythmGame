@@ -150,9 +150,15 @@ MonoBehaviour:
   travelDuration: 0
   speed: 1
   noteMoveSpeed: 0
+  isPhantom: 0
+  fakeSpawnPos: {x: 0, y: 0, z: 0}
+  switchThreshold: 0.5
+  transitionDuration: 0.2
+  vanishStart: 0.4
+  vanishEnd: 0.6
+  switchEffectPrefab: {fileID: 0}
   isHit: 0
   forceTiledDrawMode: 1
-  warnSpriteImportIssues: 1
   head: {fileID: 3751135459316472781}
   body: {fileID: 2736132883302983466}
   tail: {fileID: 8723048852449074792}

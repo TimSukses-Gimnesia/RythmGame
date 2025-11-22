@@ -284,17 +284,19 @@ MonoBehaviour:
   travelDuration: 1
   noteSpeed: 1
   holdNoteSpeed: 1
-  notePrefab: {fileID: 8946434144321846813, guid: bc4ba45324954044e8c4462b673699f4, type: 3}
+  phantomChance: 0.308
+  phantomSmoothness: 0.8
+  ghostHoldChance: 0.526
+  ghostFadeSpeed: 2
+  normalNotePrefab: {fileID: 8946434144321846813, guid: bc4ba45324954044e8c4462b673699f4, type: 3}
+  phantomNotePrefab: {fileID: 8946434144321846813, guid: 7df3065102eaab14f961710dc9e12143, type: 3}
   holdNotePrefab: {fileID: 172033478205479233, guid: c821c6c6059d85d4ba08a55ac439ddba, type: 3}
   obstaclePrefab: {fileID: 461431737137987501, guid: 93866663853f5304ea4869f63ec2b535, type: 3}
   enableTimingCircle: 1
   timingCirclePrefab: {fileID: 9063108433256096780, guid: 3ec9c91ac0737214e929970cf51f0f2a, type: 3}
   effectsParent: {fileID: 0}
-  timingCircleSortingLayer: Default
-  timingCircleSortingOrder: -5
   timingCircleStartScale: 2
   timingCircleEndScale: 0.5
-  timingCircleColor: {r: 1, g: 1, b: 1, a: 0.19607843}
   upSpawn: {fileID: 25803306}
   downSpawn: {fileID: 1868863917}
   leftSpawn: {fileID: 519932459}
@@ -3318,7 +3320,7 @@ MonoBehaviour:
   hitSound: {fileID: 8300000, guid: ec0d1c5b39f49274587c240d0c5b7e9c, type: 3}
   missSound: {fileID: 8300000, guid: 17fcdac7dc641444eb60c4502363dd2a, type: 3}
   comboBreakSound: {fileID: 0}
-  volume: 0.8
+  volume: 0
 --- !u!4 &1546802867
 Transform:
   m_ObjectHideFlags: 0
