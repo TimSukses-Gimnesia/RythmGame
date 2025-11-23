@@ -94,6 +94,7 @@ public class Obstacle : MonoBehaviour
         {
             Debug.Log("💥 Player hit obstacle!");
             HitJudgement.health -= damage;
+            HitJudgement.combo = 0;
             Destroy(gameObject);
         }
     }
