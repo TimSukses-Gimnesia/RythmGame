@@ -1,15 +1,18 @@
 using UnityEngine;
 using TMPro;
-using System.Collections; 
+using System.Collections;
 
 public class ScoreDisplay : MonoBehaviour
 {
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI comboText;
+    [Header("UI References")]
+    public TextMeshProUGUI scoreText; // Hanya Score
+    public TextMeshProUGUI comboText; // Hanya Combo
 
-    [Header("Combo Pop")]
-    public float popScale = 1.5f;     
-    public float popDuration = 0.1f;  
+    // Bagian Accuracy Slider & Text DIHAPUS karena tidak ingin ditampilkan saat main
+
+    [Header("Combo Pop Settings")]
+    public float popScale = 1.5f;
+    public float popDuration = 0.1f;
 
     private int lastCombo = 0;
     private Vector3 originalComboScale;
@@ -17,25 +20,27 @@ public class ScoreDisplay : MonoBehaviour
 
     void Start()
     {
-     
         if (comboText != null)
         {
             originalComboScale = comboText.transform.localScale;
-            comboText.enabled = false; 
+            comboText.enabled = false;
         }
         lastCombo = 0;
     }
 
     void Update()
     {
+        // 1. Update Score (Tetap ada)
         if (scoreText != null)
         {
-            scoreText.text = HitJudgement.score.ToString("D0");
+            scoreText.text = HitJudgement.score.ToString("N0");
         }
 
+        // (Bagian Update Akurasi DIHAPUS)
+
+        // 2. Update Combo (Tetap ada)
         if (comboText != null)
         {
-   
             if (HitJudgement.combo != lastCombo)
             {
                 if (HitJudgement.combo > lastCombo && HitJudgement.combo > 1)
@@ -43,33 +48,22 @@ public class ScoreDisplay : MonoBehaviour
                     comboText.text = "COMBO\n" + HitJudgement.combo.ToString();
                     comboText.enabled = true;
 
-
-                    if (popCoroutine != null)
-                    {
-                        StopCoroutine(popCoroutine);
-                    }
+                    if (popCoroutine != null) StopCoroutine(popCoroutine);
                     popCoroutine = StartCoroutine(PopComboText());
                 }
-
                 else if (HitJudgement.combo == 0)
                 {
                     comboText.enabled = false;
                 }
-
-            
                 lastCombo = HitJudgement.combo;
             }
         }
     }
 
-    
     private IEnumerator PopComboText()
     {
-     
         comboText.transform.localScale = originalComboScale * popScale;
-
         yield return new WaitForSeconds(popDuration);
-
         comboText.transform.localScale = originalComboScale;
         popCoroutine = null;
     }

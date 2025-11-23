@@ -17,7 +17,7 @@ public class Note : MonoBehaviour
     public float travelDuration;
     public float speed = 1f;
     public float noteMoveSpeed;
-
+    [HideInInspector] public string initialJudgement = "Perfect";
     // ==========================================
     // 🌊 PHANTOM SLIDE (NORMAL & HOLD)
     // ==========================================

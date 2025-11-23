@@ -40,7 +40,7 @@ public class GameOverUI : MonoBehaviour
             mainMenuButton.onClick.AddListener(OnMainMenu);
     }
 
-    public void ShowGameOver(int finalScore)
+    public void ShowGameOver(long finalScore)
     {
         if (isVisible) return;
         isVisible = true;

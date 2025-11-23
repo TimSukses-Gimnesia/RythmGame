@@ -4,95 +4,236 @@ using System.Collections.Generic;
 
 public class HitJudgement : MonoBehaviour
 {
+    // ==========================================
+    // STATISTIK GLOBAL (Reset setiap kali main)
+    // ==========================================
+    public static long score = 0;       // Pakai 'long' agar muat angka besar
+    public static int combo = 0;
+    public static float health;
+
+    // Counter Statistik untuk Laporan Akhir
+    public static int countPerfect;
+    public static int countGood;
+    public static int countMiss;
+
+    // ==========================================
+    //  SETTINGS & REFERENSI
+    // ==========================================
     [Header("Lane Settings")]
     public string targetDirection;
-    public Key targetKey;
+    public Key targetKey; // Tombol Keyboard (A/S/W/D atau Arrow)
 
     [Header("Timing Windows (detik)")]
     public float perfectTime = 0.05f;
     public float goodTime = 0.1f;
 
-    [Header("UI Popup")]
-    public HitPopup popup;
+    [Header("UI Popup & Sprites")]
+    public GameObject popupPrefab;   // Prefab Popup yang sudah dibuat
+    public Transform popupContainer; // Wadah di Canvas (Empty GameObject)
+    public Sprite perfectSprite;
+    public Sprite goodSprite;
+    public Sprite missSprite;
+    public Sprite breakSprite;
 
-    [Header("Health Bar Values")]
+    [Header("Scoring & Health Values")]
     public float perfectHealthGain = 10f;
     public float goodHealthGain = 5f;
     public float missHealthPenalty = 15f;
     public float holdBreakPenalty = 10f;
     public float holdSuccessGain = 2f;
 
-    [Header("Hit Effect (VFX)")]
+    [Header("VFX")]
     public GameObject hitEffectPrefab;
-    public bool enableHitEffect = true;
     public Transform effectsParent;
-    public string effectSortingLayer = "Default";
+    public string effectSortingLayer = "Default";   
     public int effectSortingOrder = 20;
-
+    public bool enableHitEffect = true;
+    // Internal Variables
     private List<Note> notesInTrigger = new List<Note>();
     private SpawnNote spawner;
     private Note currentlyHoldingNote = null;
 
-    public static int score = 0;
-    public static int combo = 0;
-    public static float health;
-
     void Start()
     {
         spawner = FindFirstObjectByType<SpawnNote>();
+
+        // 🔥 PENTING: RESET STATISTIK SAAT GAME MULAI
+        score = 0;
+        combo = 0;
+        countPerfect = 0;
+        countGood = 0;
+        countMiss = 0;
+
+        // Ambil Max Health dari Player
+        health = FindFirstObjectByType<PlayerMovement>()?.maxHealth ?? 100f;
     }
 
-    // =============================
-    // ✅ HEALTH MANAGEMENT
-    // =============================
+    // ==========================================
+    // 🧮 FUNGSI HITUNG AKURASI (0 - 100%)
+    // ==========================================
+    public static float GetAccuracy()
+    {
+        int totalHits = countPerfect + countGood + countMiss;
+        if (totalHits == 0) return 0f;
+
+        // Bobot Nilai: Perfect=100, Good=50, Miss=0
+        float totalPoints = (countPerfect * 100f) + (countGood * 50f);
+        float maxPoints = totalHits * 100f;
+
+        return (totalPoints / maxPoints) * 100f;
+    }
+
+    // ==========================================
+    // 🎮 LOGIKA HIT (TAP BIASA)
+    // ==========================================
+    void HandleHit(string judgement, Note note, bool destroyNote)
+    {
+        combo++;
+
+        // Logika Score Attack: BaseScore * Combo
+        int baseScore = (judgement == "Perfect") ? 200 : (judgement == "Good" ? 50 : 0);
+        score += (long)baseScore * combo;
+
+        Sprite spriteToShow = null;
+
+        if (judgement == "Perfect")
+        {
+            ApplyHealth(perfectHealthGain);
+            spriteToShow = perfectSprite;
+            countPerfect++; // ✅ Tambah Counter Perfect
+        }
+        else if (judgement == "Good")
+        {
+            ApplyHealth(goodHealthGain);
+            spriteToShow = goodSprite;
+            countGood++;    // ✅ Tambah Counter Good
+        }
+
+        // Simpan judgement awal untuk Hold Note (biar adil saat dilepas nanti)
+        if (note.type == "hold") note.initialJudgement = judgement;
+
+        // Tampilkan Visual & Suara
+        SpawnPopup(spriteToShow);
+        SpawnHitEffect(note);
+        PlayHitSFX(judgement);
+
+        note.isHit = true;
+        if (destroyNote) Destroy(note.gameObject);
+    }
+
+    // ==========================================
+    // 🎹 LOGIKA HOLD (TAHAN)
+    // ==========================================
+    void HandleHoldJudgement(bool success, Note note)
+    {
+        Sprite spriteToShow = null;
+
+        if (success)
+        {
+            combo++;
+            score += 150 * combo; // Bonus skor hold
+            ApplyHealth(holdSuccessGain);
+
+            // Gunakan Judgement Awal (jika awalnya Good, akhirnya juga Good)
+            if (note.initialJudgement == "Good")
+            {
+                spriteToShow = goodSprite;
+                countGood++; // ✅ Dihitung Good
+                PlayHitSFX("Good");
+            }
+            else
+            {
+                spriteToShow = perfectSprite;
+                countPerfect++; // ✅ Dihitung Perfect
+                PlayHitSFX("Hit"); // Suara Cling
+            }
+        }
+        else
+        {
+            // Gagal Tahan (Break)
+            combo = 0;
+            ApplyHealth(-holdBreakPenalty);
+
+            spriteToShow = (breakSprite != null) ? breakSprite : missSprite;
+            Debug.Log("MISS TERJADI! Alasan: HOLD BREAK (Lepas Tombol)");
+            countMiss++; // ✅ Dihitung Miss/Break
+            PlayHitSFX("BREAK");
+        }
+
+        SpawnPopup(spriteToShow);
+        Destroy(note.gameObject);
+        currentlyHoldingNote = null;
+    }
+
+    // ==========================================
+    // ❌ LOGIKA MISS (LEWAT/SALAH)
+    // ==========================================
+    void HandleMiss(Note note)
+    {
+        if (note == null || note.isHit) return;
+        if (note == currentlyHoldingNote) currentlyHoldingNote = null;
+
+        SpawnPopup(missSprite);
+
+        combo = 0;
+        ApplyHealth(-missHealthPenalty);
+        PlayHitSFX("Miss");
+        Debug.Log($"MISS TERJADI! Waktu: {Time.time} | Alasan: Telat Tekan / Lewat"); // <--- Cek Console
+        countMiss++; // ✅ Tambah Counter Miss
+
+        note.isHit = true;
+        Destroy(note.gameObject);
+
+    }
+
+    // ==========================================
+    // 🛠️ FUNGSI HELPER
+    // ==========================================
+    void SpawnPopup(Sprite sprite)
+    {
+        if (popupPrefab != null && sprite != null && popupContainer != null)
+        {
+            // Clone prefab ke dalam container
+            GameObject newPopup = Instantiate(popupPrefab, popupContainer);
+            newPopup.transform.localPosition = Vector3.zero; // Reset posisi ke tengah container
+
+            var hp = newPopup.GetComponent<HitPopup>();
+            if (hp != null) hp.Setup(sprite);
+        }
+    }
+
+    void SpawnHitEffect(Note note)
+    {
+        if (!enableHitEffect || hitEffectPrefab == null) return;
+
+        GameObject fx = Instantiate(hitEffectPrefab, note.targetPos, Quaternion.identity, effectsParent);
+        var ps = fx.GetComponent<ParticleSystem>();
+        var psR = fx.GetComponent<ParticleSystemRenderer>();
+
+        if (psR != null)
+        {
+            psR.sortingLayerName = effectSortingLayer;
+            psR.sortingOrder = effectSortingOrder;
+        }
+
+        if (ps != null) Destroy(fx, ps.main.duration + ps.main.startLifetime.constantMax);
+        else Destroy(fx, 1f);
+    }
+
+    void PlayHitSFX(string judgement)
+    {
+        if (SFXManager.Instance == null) return;
+        if (judgement == "Perfect" || judgement == "Good") SFXManager.Instance.PlayHit();
+        else if (judgement == "Miss") SFXManager.Instance.PlayMiss();
+        else if (judgement == "BREAK") SFXManager.Instance.PlayComboBreak();
+    }
+
     void ApplyHealth(float delta)
     {
         float maxHP = FindFirstObjectByType<PlayerMovement>()?.maxHealth ?? 100f;
         health = Mathf.Clamp(health + delta, 0f, maxHP);
     }
 
-    // =============================
-    // ✅ HIT EFFECT (VISUAL)
-    // =============================
-    void SpawnHitEffect(Note note)
-    {
-        if (!enableHitEffect || hitEffectPrefab == null || note == null) return;
-
-        Vector3 pos = new Vector3(note.targetPos.x, note.targetPos.y, 0f);
-        GameObject fx = Instantiate(hitEffectPrefab, pos, Quaternion.identity, effectsParent);
-
-        var psRenderer = fx.GetComponent<ParticleSystemRenderer>();
-        if (psRenderer != null)
-        {
-            psRenderer.sortingLayerName = effectSortingLayer;
-            psRenderer.sortingOrder = effectSortingOrder;
-        }
-
-        var ps = fx.GetComponent<ParticleSystem>();
-        if (ps != null)
-            Destroy(fx, ps.main.duration + ps.main.startLifetime.constantMax);
-        else
-            Destroy(fx, 1.2f);
-    }
-
-    // =============================
-    // ✅ HIT SOUND (SFX)
-    // =============================
-    void PlayHitSFX(string judgement)
-    {
-        if (SFXManager.Instance == null) return;
-
-        if (judgement == "Perfect" || judgement == "Good")
-            SFXManager.Instance.PlayHit();
-        else if (judgement == "Miss")
-            SFXManager.Instance.PlayMiss();
-        else if (judgement == "BREAK")
-            SFXManager.Instance.PlayComboBreak();
-    }
-
-    // =============================
-    // ✅ JUDGEMENT LOGIC
-    // =============================
     private string GetJudgement(double timeDiff)
     {
         if (timeDiff <= perfectTime) return "Perfect";
@@ -100,9 +241,9 @@ public class HitJudgement : MonoBehaviour
         return "Miss";
     }
 
-    // =============================
-    // ✅ INPUT HANDLER (ARROW + WASD)
-    // =============================
+    // ==========================================
+    // 🔄 UPDATE LOOP & INPUT
+    // ==========================================
     bool IsLaneKeyPressed()
     {
         if (Keyboard.current == null) return false;
@@ -148,15 +289,12 @@ public class HitJudgement : MonoBehaviour
         return primary || alt;
     }
 
-    // =============================
-    // ✅ UPDATE LOOP
-    // =============================
     void Update()
     {
         if (spawner == null || spawner.songStartDspTime == 0.0) return;
         double songTime = AudioSettings.dspTime - spawner.songStartDspTime;
 
-        // --- auto MISS jika lewat timing window ---
+        // 1. Auto Miss jika lewat
         while (notesInTrigger.Count > 0 && songTime > notesInTrigger[0].hitTime + goodTime)
         {
             Note noteToMiss = notesInTrigger[0];
@@ -164,20 +302,17 @@ public class HitJudgement : MonoBehaviour
             HandleMiss(noteToMiss);
         }
 
-        // --- handle HOLD note ---
+        // 2. Logic Hold Note
         if (currentlyHoldingNote != null)
         {
             double holdEndTime = currentlyHoldingNote.hitTime + currentlyHoldingNote.holdDurationSec;
 
             if (IsLaneKeyPressed())
             {
-                if (!currentlyHoldingNote.isHolding)
-                    currentlyHoldingNote.isHolding = true;
+                if (!currentlyHoldingNote.isHolding) currentlyHoldingNote.isHolding = true;
 
-                if (songTime >= holdEndTime)
-                    HandleHoldJudgement(true, currentlyHoldingNote);
-                else
-                    currentlyHoldingNote.UpdateHoldProgress(songTime);
+                if (songTime >= holdEndTime) HandleHoldJudgement(true, currentlyHoldingNote);
+                else currentlyHoldingNote.UpdateHoldProgress(songTime);
             }
 
             if (WasLaneKeyReleasedThisFrame())
@@ -194,7 +329,7 @@ public class HitJudgement : MonoBehaviour
             }
         }
 
-        // --- handle single tap notes ---
+        // 3. Logic Tap Note
         if (currentlyHoldingNote == null && WasLaneKeyPressedThisFrame())
         {
             if (notesInTrigger.Count > 0)
@@ -209,13 +344,13 @@ public class HitJudgement : MonoBehaviour
                     {
                         currentlyHoldingNote = noteToHit;
                         notesInTrigger.RemoveAt(0);
-                        HandleHit(judgement, noteToHit, false);
+                        HandleHit(judgement, noteToHit, false); // false = jangan destroy dulu
                         noteToHit.isHolding = true;
                     }
                     else
                     {
                         notesInTrigger.RemoveAt(0);
-                        HandleHit(judgement, noteToHit, true);
+                        HandleHit(judgement, noteToHit, true); // true = destroy langsung
                     }
                 }
                 else
@@ -227,77 +362,6 @@ public class HitJudgement : MonoBehaviour
         }
     }
 
-    // =============================
-    // ✅ HANDLE HIT
-    // =============================
-    void HandleHit(string judgement, Note note, bool destroyNote)
-    {
-        combo++;
-        int baseScore = (judgement == "Perfect") ? 200 : (judgement == "Good" ? 50 : 0);
-
-        if (judgement == "Perfect") ApplyHealth(perfectHealthGain);
-        else if (judgement == "Good") ApplyHealth(goodHealthGain);
-
-        popup.Setup(judgement + "!", (judgement == "Perfect") ? Color.cyan : Color.green);
-        popup.gameObject.SetActive(true);
-
-        score += baseScore * combo;
-        SpawnHitEffect(note);
-        PlayHitSFX(judgement); // 🔊 play SFX
-
-        note.isHit = true;
-        if (destroyNote) Destroy(note.gameObject);
-    }
-
-    // =============================
-    // ✅ HANDLE HOLD
-    // =============================
-    void HandleHoldJudgement(bool success, Note note)
-    {
-        if (success)
-        {
-            combo++;
-            score += 150 * combo;
-            ApplyHealth(holdSuccessGain);
-            popup.Setup("HOLD OK!", Color.yellow);
-            SpawnHitEffect(note);
-            PlayHitSFX("Good"); // gunakan suara hit biasa
-        }
-        else
-        {
-            combo = 0;
-            ApplyHealth(-holdBreakPenalty);
-            popup.Setup("BREAK", Color.red);
-            PlayHitSFX("BREAK"); // gunakan suara miss/combo break
-        }
-
-        popup.gameObject.SetActive(true);
-        Destroy(note.gameObject);
-        currentlyHoldingNote = null;
-    }
-
-    // =============================
-    // ✅ HANDLE MISS
-    // =============================
-    void HandleMiss(Note note)
-    {
-        if (note == null || note.isHit) return;
-        if (note == currentlyHoldingNote) currentlyHoldingNote = null;
-
-        popup.Setup("MISS", Color.red);
-        popup.gameObject.SetActive(true);
-
-        combo = 0;
-        ApplyHealth(-missHealthPenalty);
-        PlayHitSFX("Miss"); // 🔊 suara miss
-
-        note.isHit = true;
-        Destroy(note.gameObject);
-    }
-
-    // =============================
-    // ✅ COLLISION DETECTION
-    // =============================
     private void OnTriggerEnter2D(Collider2D other)
     {
         Note note = other.GetComponent<Note>();
@@ -311,9 +375,6 @@ public class HitJudgement : MonoBehaviour
     private void OnTriggerExit2D(Collider2D other)
     {
         Note note = other.GetComponent<Note>();
-        if (note != null && notesInTrigger.Contains(note))
-        {
-            notesInTrigger.Remove(note);
-        }
+        if (note != null && notesInTrigger.Contains(note)) notesInTrigger.Remove(note);
     }
 }
