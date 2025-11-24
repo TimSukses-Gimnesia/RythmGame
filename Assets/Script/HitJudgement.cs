@@ -4,10 +4,8 @@ using System.Collections.Generic;
 
 public class HitJudgement : MonoBehaviour
 {
-    // ==========================================
-    // STATISTIK GLOBAL (Reset setiap kali main)
-    // ==========================================
-    public static long score = 0;       // Pakai 'long' agar muat angka besar
+    // declare awal ketika mulai game
+    public static long score = 0;      
     public static int combo = 0;
     public static float health;
 
@@ -16,20 +14,18 @@ public class HitJudgement : MonoBehaviour
     public static int countGood;
     public static int countMiss;
 
-    // ==========================================
-    //  SETTINGS & REFERENSI
-    // ==========================================
+  
     [Header("Lane Settings")]
     public string targetDirection;
-    public Key targetKey; // Tombol Keyboard (A/S/W/D atau Arrow)
+    public Key targetKey; 
 
     [Header("Timing Windows (detik)")]
     public float perfectTime = 0.05f;
     public float goodTime = 0.1f;
 
     [Header("UI Popup & Sprites")]
-    public GameObject popupPrefab;   // Prefab Popup yang sudah dibuat
-    public Transform popupContainer; // Wadah di Canvas (Empty GameObject)
+    public GameObject popupPrefab;   
+    public Transform popupContainer; 
     public Sprite perfectSprite;
     public Sprite goodSprite;
     public Sprite missSprite;
@@ -57,7 +53,7 @@ public class HitJudgement : MonoBehaviour
     {
         spawner = FindFirstObjectByType<SpawnNote>();
 
-        // 🔥 PENTING: RESET STATISTIK SAAT GAME MULAI
+        // reset setiap mulai game baru
         score = 0;
         combo = 0;
         countPerfect = 0;
@@ -68,9 +64,7 @@ public class HitJudgement : MonoBehaviour
         health = FindFirstObjectByType<PlayerMovement>()?.maxHealth ?? 100f;
     }
 
-    // ==========================================
-    // 🧮 FUNGSI HITUNG AKURASI (0 - 100%)
-    // ==========================================
+    // hitung acurracy
     public static float GetAccuracy()
     {
         int totalHits = countPerfect + countGood + countMiss;
@@ -83,9 +77,7 @@ public class HitJudgement : MonoBehaviour
         return (totalPoints / maxPoints) * 100f;
     }
 
-    // ==========================================
-    // 🎮 LOGIKA HIT (TAP BIASA)
-    // ==========================================
+    // logic note biasa
     void HandleHit(string judgement, Note note, bool destroyNote)
     {
         combo++;
@@ -100,13 +92,13 @@ public class HitJudgement : MonoBehaviour
         {
             ApplyHealth(perfectHealthGain);
             spriteToShow = perfectSprite;
-            countPerfect++; // ✅ Tambah Counter Perfect
+            countPerfect++;
         }
         else if (judgement == "Good")
         {
             ApplyHealth(goodHealthGain);
             spriteToShow = goodSprite;
-            countGood++;    // ✅ Tambah Counter Good
+            countGood++;    
         }
 
         // Simpan judgement awal untuk Hold Note (biar adil saat dilepas nanti)
@@ -121,9 +113,8 @@ public class HitJudgement : MonoBehaviour
         if (destroyNote) Destroy(note.gameObject);
     }
 
-    // ==========================================
-    // 🎹 LOGIKA HOLD (TAHAN)
-    // ==========================================
+
+    // Logic hold
     void HandleHoldJudgement(bool success, Note note)
     {
         Sprite spriteToShow = null;
@@ -134,29 +125,26 @@ public class HitJudgement : MonoBehaviour
             score += 150 * combo; // Bonus skor hold
             ApplyHealth(holdSuccessGain);
 
-            // Gunakan Judgement Awal (jika awalnya Good, akhirnya juga Good)
             if (note.initialJudgement == "Good")
             {
                 spriteToShow = goodSprite;
-                countGood++; // ✅ Dihitung Good
+                countGood++; 
                 PlayHitSFX("Good");
             }
             else
             {
                 spriteToShow = perfectSprite;
-                countPerfect++; // ✅ Dihitung Perfect
-                PlayHitSFX("Hit"); // Suara Cling
+                countPerfect++;
             }
         }
         else
         {
-            // Gagal Tahan (Break)
             combo = 0;
             ApplyHealth(-holdBreakPenalty);
 
             spriteToShow = (breakSprite != null) ? breakSprite : missSprite;
             Debug.Log("MISS TERJADI! Alasan: HOLD BREAK (Lepas Tombol)");
-            countMiss++; // ✅ Dihitung Miss/Break
+            countMiss++; 
             PlayHitSFX("BREAK");
         }
 
@@ -165,9 +153,7 @@ public class HitJudgement : MonoBehaviour
         currentlyHoldingNote = null;
     }
 
-    // ==========================================
-    // ❌ LOGIKA MISS (LEWAT/SALAH)
-    // ==========================================
+
     void HandleMiss(Note note)
     {
         if (note == null || note.isHit) return;
@@ -178,24 +164,20 @@ public class HitJudgement : MonoBehaviour
         combo = 0;
         ApplyHealth(-missHealthPenalty);
         PlayHitSFX("Miss");
-        Debug.Log($"MISS TERJADI! Waktu: {Time.time} | Alasan: Telat Tekan / Lewat"); // <--- Cek Console
-        countMiss++; // ✅ Tambah Counter Miss
+        countMiss++; 
 
         note.isHit = true;
         Destroy(note.gameObject);
 
     }
 
-    // ==========================================
-    // 🛠️ FUNGSI HELPER
-    // ==========================================
     void SpawnPopup(Sprite sprite)
     {
         if (popupPrefab != null && sprite != null && popupContainer != null)
         {
-            // Clone prefab ke dalam container
+           
             GameObject newPopup = Instantiate(popupPrefab, popupContainer);
-            newPopup.transform.localPosition = Vector3.zero; // Reset posisi ke tengah container
+            newPopup.transform.localPosition = Vector3.zero; 
 
             var hp = newPopup.GetComponent<HitPopup>();
             if (hp != null) hp.Setup(sprite);
@@ -241,9 +223,8 @@ public class HitJudgement : MonoBehaviour
         return "Miss";
     }
 
-    // ==========================================
-    // 🔄 UPDATE LOOP & INPUT
-    // ==========================================
+ 
+ 
     bool IsLaneKeyPressed()
     {
         if (Keyboard.current == null) return false;
@@ -294,7 +275,6 @@ public class HitJudgement : MonoBehaviour
         if (spawner == null || spawner.songStartDspTime == 0.0) return;
         double songTime = AudioSettings.dspTime - spawner.songStartDspTime;
 
-        // 1. Auto Miss jika lewat
         while (notesInTrigger.Count > 0 && songTime > notesInTrigger[0].hitTime + goodTime)
         {
             Note noteToMiss = notesInTrigger[0];
@@ -302,7 +282,6 @@ public class HitJudgement : MonoBehaviour
             HandleMiss(noteToMiss);
         }
 
-        // 2. Logic Hold Note
         if (currentlyHoldingNote != null)
         {
             double holdEndTime = currentlyHoldingNote.hitTime + currentlyHoldingNote.holdDurationSec;

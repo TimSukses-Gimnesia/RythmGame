@@ -18,9 +18,7 @@ public class Note : MonoBehaviour
     public float speed = 1f;
     public float noteMoveSpeed;
     [HideInInspector] public string initialJudgement = "Perfect";
-    // ==========================================
-    // 🌊 PHANTOM SLIDE (NORMAL & HOLD)
-    // ==========================================
+  
     [Header("Phantom (Slide) Logic")]
     public bool isPhantom = false;
     public Vector3 fakeSpawnPos;
@@ -30,18 +28,14 @@ public class Note : MonoBehaviour
     public GameObject switchEffectPrefab;
     private bool hasTriggeredFX = false;
 
-    // ==========================================
-    // 👻 GHOST HOLD (WORMHOLE EFFECT)
-    // ==========================================
+  
     [Header("Ghost Hold (Wormhole) Logic")]
     public bool isGhostHold = false;
     [Tooltip("Titik (0.0-1.0) di mana note hilang total dan pindah posisi.")]
     public float ghostSwitchPoint = 0.5f;
     public float fadeSpeed = 4f;
 
-    // ==========================================
-    // INTERNAL VARS
-    // ==========================================
+ 
     [HideInInspector] public bool isHit = false;
     public bool forceTiledDrawMode = true;
 
@@ -55,7 +49,7 @@ public class Note : MonoBehaviour
 
     // Untuk manipulasi visual
     private float currentGhostAlpha = 1f;
-    private Vector3 originalScale; // Menyimpan skala asli untuk efek shrinking
+    private Vector3 originalScale; 
 
     [Header("Hold Parts")]
     public Transform head;
@@ -157,7 +151,7 @@ public class Note : MonoBehaviour
         body.localPosition = new Vector3(0, -headHeight, 0);
         tail.localPosition = new Vector3(0, -headHeight - currentBodyLength, 0);
 
-        // 🔥 UPDATE COLOR + ALPHA UNTUK GHOST
+     
         if (allSpriteRenderers != null)
         {
             Color baseColor = Color.Lerp(Color.white, Color.yellow, progress);
@@ -177,27 +171,24 @@ public class Note : MonoBehaviour
         double t = (songTime - spawnTime) / effectiveDuration;
         float progress = Mathf.Clamp01((float)t);
 
-        // ==========================================
-        // 👻 LOGIKA GHOST HOLD (WORMHOLE EFFECT)
-        // ==========================================
+  
         if (isGhostHold)
         {
-            // Hitung jarak ke titik tengah teleport (0.5)
-            float distToCenter = Mathf.Abs(progress - ghostSwitchPoint); // 0.5 -> 0 -> 0.5
+          
+            float distToCenter = Mathf.Abs(progress - ghostSwitchPoint); 
 
-            // Efek Skala: 1 -> 0 -> 1 (Mengecil lalu Membesar)
-            // Dikali 2 supaya saat distToCenter 0.5 (awal), scale-nya 1.
+       
             float scaleFactor = Mathf.Clamp01(distToCenter * 2f * fadeSpeed);
-            // Tambahkan curve agar scaling lebih smooth (Easing)
+        
             scaleFactor = scaleFactor * scaleFactor * (3f - 2f * scaleFactor);
 
             transform.localScale = originalScale * scaleFactor;
-            currentGhostAlpha = scaleFactor; // Alpha mengikuti scale
+            currentGhostAlpha = scaleFactor; 
 
-            // Logika Posisi & Rotasi Snap
+       
             if (progress < ghostSwitchPoint)
             {
-                // FASE 1: Di Jalur Palsu
+                
                 transform.position = Vector3.Lerp(fakeSpawnPos, fakeTargetPos, progress);
                 transform.rotation = initialRotation;
             }
@@ -216,13 +207,11 @@ public class Note : MonoBehaviour
                 mySpriteRenderer.color = c;
             }
         }
-        // ==========================================
-        // 🌊 LOGIKA PHANTOM SLIDE (SMOOTH BANKING)
-        // ==========================================
+   
         else if (isPhantom)
         {
             currentGhostAlpha = 1f;
-            transform.localScale = originalScale; // Pastikan scale normal
+            transform.localScale = originalScale;
 
             float startTransition = switchThreshold - (transitionDuration / 2f);
             float endTransition = switchThreshold + (transitionDuration / 2f);
@@ -249,20 +238,18 @@ public class Note : MonoBehaviour
                     Instantiate(switchEffectPrefab, transform.position, Quaternion.identity);
                 }
 
-                // Hitung progress linear 0 s/d 1 dalam durasi transisi
+              
                 float tLinear = Mathf.InverseLerp(startTransition, endTransition, progress);
 
-                // Gunakan Easing agar gerakan lebih luwes (Slow in - Fast Out - Slow In)
+               // perhalus gerakan
                 float tEased = Mathf.SmoothStep(0f, 1f, tLinear);
                     
-                // --- POSISI ---
+                // POSISI
                 Vector3 posOnFake = Vector3.Lerp(fakeSpawnPos, fakeTargetPos, progress);
                 Vector3 posOnReal = Vector3.Lerp(spawnPos, targetPos, progress);
                 transform.position = Vector3.Lerp(posOnFake, posOnReal, tEased);
 
-                // --- ROTASI (KUNCI PERBAIKAN) ---
-                // Menggunakan Slerp agar note berputar pelan menuju arah jalur baru
-                // Ini membuat efek "Banking" seperti pesawat berbelok
+                // rotation untuk membuat efek belok
                 transform.rotation = Quaternion.Slerp(initialRotation, targetRotation, tEased);
             }
         }

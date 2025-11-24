@@ -32,9 +32,10 @@ public class SliderHealth : MonoBehaviour
 
     void Update()
     {
-        // Pastikan player ada
+        
         if (player == null) return;
 
+        //mengambil damage sesuai note
         float targetValue = HitJudgement.health;
 
       

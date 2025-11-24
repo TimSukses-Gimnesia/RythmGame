@@ -259,7 +259,16 @@ public class BeatmapSelectManager : MonoBehaviour
                 GameSession.SelectedBeatmapPath = folderPath;
                 GameSession.SelectedBeatmapName = diffName;
 
-                SceneManager.LoadScene("Gameplay");
+                // Cari LevelLoader dan panggil transisinya
+                LoadingManager loader = FindFirstObjectByType<LoadingManager>();
+                if (loader != null)
+                {
+                    loader.LoadLevel("Gameplay");
+                }
+                else
+                {
+                    SceneManager.LoadScene("Gameplay");
+                }
             });
         }
     }
