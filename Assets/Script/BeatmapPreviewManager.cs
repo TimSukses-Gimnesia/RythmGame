@@ -1,13 +1,17 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.IO;
 using UnityEngine.Networking;
+using UnityEngine.Audio; // <-- INTEGRASI MIXER DITAMBAHKAN
 
 [RequireComponent(typeof(AudioSource))]
 public class BeatmapPreviewManager : MonoBehaviour
 {
+    // =============================
+    // 🧩 Metadata Reader Class
+    // =============================
     class OsuMetadata
     {
         public string title;
@@ -16,6 +20,7 @@ public class BeatmapPreviewManager : MonoBehaviour
         public float previewTime;
     }
 
+    // Fungsi untuk membaca metadata dari file .osu
     OsuMetadata ReadMetadataFromOsu(string folder)
     {
         string[] osuFiles = Directory.GetFiles(folder, "*.osu");
@@ -39,10 +44,9 @@ public class BeatmapPreviewManager : MonoBehaviour
             else if (line.StartsWith("PreviewTime:"))
             {
                 if (float.TryParse(line.Substring("PreviewTime:".Length).Trim(), out float t))
-                    data.previewTime = t / 1000f;
+                    data.previewTime = t / 1000f; // convert ms -> seconds
             }
         }
-
         return data;
     }
 
@@ -50,6 +54,9 @@ public class BeatmapPreviewManager : MonoBehaviour
     public Image coverImage;
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI artistText;
+
+    [Header("Audio Mixer")] // 🔥 BARU: Untuk kontrol volume global Music Preview
+    public AudioMixerGroup musicGroup;
 
     private AudioSource audioSource;
     private Coroutine fadeCoroutine;
@@ -59,6 +66,12 @@ public class BeatmapPreviewManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         audioSource.loop = false;
         audioSource.playOnAwake = false;
+
+        // 🔗 INTEGRASI MIXER: Hubungkan AudioSource ke grup Music
+        if (musicGroup != null)
+        {
+            audioSource.outputAudioMixerGroup = musicGroup;
+        }
     }
 
     public void ShowPreview(string beatmapFolder)
@@ -72,12 +85,12 @@ public class BeatmapPreviewManager : MonoBehaviour
         if (meta != null)
         {
             titleText.text = string.IsNullOrEmpty(meta.title)
-                             ? Path.GetFileName(beatmapFolder)
-                             : meta.title;
+                                 ? Path.GetFileName(beatmapFolder)
+                                 : meta.title;
 
             artistText.text = string.IsNullOrEmpty(meta.artist)
-                             ? "Unknown"
-                             : meta.artist;
+                                 ? "Unknown"
+                                 : meta.artist;
         }
         else
         {
@@ -108,9 +121,11 @@ public class BeatmapPreviewManager : MonoBehaviour
         return audios.Length > 0 ? audios[0] : null;
     }
 
+    // --- Load Cover ---
     IEnumerator LoadCover(string path)
     {
-        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture("file:///" + path))
+        string url = "file:///" + path.Replace("\\", "/");
+        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(url))
         {
             yield return www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success) yield break;
@@ -121,9 +136,11 @@ public class BeatmapPreviewManager : MonoBehaviour
         }
     }
 
+    // --- Load Audio and Start Playback ---
     IEnumerator LoadAndPlayAudio(string path)
     {
-        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file:///" + path, AudioType.UNKNOWN))
+        string url = "file:///" + path.Replace("\\", "/");
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.UNKNOWN))
         {
             yield return www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success) yield break;
@@ -137,12 +154,15 @@ public class BeatmapPreviewManager : MonoBehaviour
         }
     }
 
+    // --- Fade Logic ---
     IEnumerator FadeInAudio(AudioClip clip)
     {
+        // fade out old audio
         if (audioSource.isPlaying)
         {
             for (float v = 1f; v > 0f; v -= Time.deltaTime * 2f)
             {
+                // NOTE: Tetap atur volume di sini untuk tujuan FADE IN/OUT
                 audioSource.volume = v;
                 yield return null;
             }
@@ -153,6 +173,7 @@ public class BeatmapPreviewManager : MonoBehaviour
         audioSource.volume = 0f;
         audioSource.Play();
 
+        // fade in new audio
         for (float v = 0f; v < 1f; v += Time.deltaTime * 2f)
         {
             audioSource.volume = v;

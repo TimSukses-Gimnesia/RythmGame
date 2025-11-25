@@ -305,6 +305,8 @@ MonoBehaviour:
   downTarget: {fileID: 722416200}
   leftTarget: {fileID: 1822449041}
   rightTarget: {fileID: 855145284}
+  musicGroup: {fileID: -8530120086663536067, guid: ec11488241a93894c91f4ca4461b5d89, type: 2}
+  sfxGroup: {fileID: -4462768977587264866, guid: ec11488241a93894c91f4ca4461b5d89, type: 2}
   songStartDspTime: 0
   isGameOver: 0
 --- !u!4 &49122759
@@ -5153,6 +5155,7 @@ MonoBehaviour:
   missSound: {fileID: 8300000, guid: 17fcdac7dc641444eb60c4502363dd2a, type: 3}
   comboBreakSound: {fileID: 0}
   volume: 1
+  sfxGroup: {fileID: -4462768977587264866, guid: ec11488241a93894c91f4ca4461b5d89, type: 2}
 --- !u!4 &1546802867
 Transform:
   m_ObjectHideFlags: 0

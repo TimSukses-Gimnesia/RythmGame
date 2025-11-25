@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+// Mengelola transisi scene dan panel overlay.
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -7,7 +8,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject settingsPanel;
     public GameObject creditsPanel;
     public GameObject howToPlayPanel;
-    public GameObject quitConfirmationPanel; // <-- 1. Tambahkan referensi panel konfirmasi
+    public GameObject quitConfirmationPanel;
 
     public void OnStartGame()
     {
@@ -41,6 +42,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    // Fungsi universal untuk menutup panel apa pun.
     public void ClosePanel(GameObject panelToClose)
     {
         if (panelToClose != null)
@@ -49,7 +51,6 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    // 2. Modifikasi OnQuit() untuk HANYA memunculkan panel
     public void OnQuit()
     {
         if (quitConfirmationPanel != null)
@@ -58,13 +59,11 @@ public class MainMenuManager : MonoBehaviour
         }
         else
         {
-            // Fallback jika panel tidak di-assign, langsung quit
             Debug.LogWarning("Quit Confirmation Panel not set. Quitting directly.");
             ConfirmQuit();
         }
     }
 
-    // 3. Buat fungsi BARU untuk tombol "Yes"
     public void ConfirmQuit()
     {
         Debug.Log("Quitting application...");

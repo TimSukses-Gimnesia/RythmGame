@@ -1,20 +1,23 @@
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Audio; // 🔥 INTEGRASI MIXER
 
 public class SFXManager : MonoBehaviour
 {
     public static SFXManager Instance;
 
-    [Header("Hit Sounds")]
-    public AudioClip hitSound;        // untuk Perfect & Good
-    public AudioClip missSound;       // untuk Miss
-    public AudioClip comboBreakSound; // opsional tambahan
+    [Header("Sound Clips")]
+    public AudioClip hitSound;
+    public AudioClip missSound;
+    public AudioClip comboBreakSound;
     [Range(0f, 1f)] public float volume = 0.8f;
+
+    [Header("Mixer Group")] // 🔥 BARU: Untuk kontrol volume global SFX
+    public AudioMixerGroup sfxGroup;
 
     private AudioSource source;
 
     void Awake()
     {
-        // Pastikan cuma ada 1 instance di game
         if (Instance != null)
         {
             Destroy(gameObject);
@@ -27,6 +30,14 @@ public class SFXManager : MonoBehaviour
         source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
         source.loop = false;
+
+        source.volume = volume;
+
+        // 🔥 HUBUNGKAN KE MIXER GROUP SFX
+        if (sfxGroup != null)
+        {
+            source.outputAudioMixerGroup = sfxGroup;
+        }
     }
 
     public void PlayHit()

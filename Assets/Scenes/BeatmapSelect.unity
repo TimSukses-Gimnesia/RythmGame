@@ -1631,6 +1631,7 @@ MonoBehaviour:
   coverImage: {fileID: 1073789352}
   titleText: {fileID: 1281499260}
   artistText: {fileID: 128053417}
+  musicGroup: {fileID: -8530120086663536067, guid: ec11488241a93894c91f4ca4461b5d89, type: 2}
 --- !u!82 &1162864742
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1778,6 +1779,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuAudioManager
   clickSound: {fileID: 8300000, guid: fd2cb5815674bac4cab21e3bfda08cbd, type: 3}
   bgmMusic: {fileID: 0}
+  bgmGroup: {fileID: 0}
+  sfxGroup: {fileID: 0}
   clickVolume: 0.7
   bgmVolume: 0.5
 --- !u!1 &1219251656

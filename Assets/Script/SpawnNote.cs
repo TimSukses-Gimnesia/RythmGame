@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine.Networking;
+using UnityEngine.Audio; // 🔥 DITAMBAHKAN
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(AudioSource))]
 public class SpawnNote : MonoBehaviour
@@ -24,7 +26,7 @@ public class SpawnNote : MonoBehaviour
     public float noteSpeed = 1.0f;
     public float holdNoteSpeed = 0.4f;
 
-   
+
     [Header("Phantom (Slide) Logic")]
     [Range(0f, 1f)] public float phantomChance = 0.3f;
     public float phantomSmoothness = 0.2f;
@@ -51,6 +53,11 @@ public class SpawnNote : MonoBehaviour
     public Transform upSpawn, downSpawn, leftSpawn, rightSpawn;
     public Transform upTarget, downTarget, leftTarget, rightTarget;
 
+    // 🔥 VARIBEL MIXER DITAMBAHKAN
+    [Header("Audio Mixer")]
+    public AudioMixerGroup musicGroup;
+    public AudioMixerGroup sfxGroup; // DITAMBAHKAN (untuk fleksibilitas, meskipun tidak dipakai di AudioSource ini)
+
     [HideInInspector] public double songStartDspTime;
     private AudioSource audioSource;
     private List<OsuBeatmapLoader.OsuNote> notes;
@@ -64,6 +71,13 @@ public class SpawnNote : MonoBehaviour
     {
         instance = this;
         audioSource = GetComponent<AudioSource>();
+
+        // 🔗 KONEKSI MUSIC MIXER
+        if (musicGroup != null)
+        {
+            audioSource.outputAudioMixerGroup = musicGroup;
+        }
+
         phantomChance = GameSession.SelectedPhantomChance;
         osuFilePath = GameSession.SelectedOsuFile;
         if (string.IsNullOrEmpty(osuFilePath) && PlayerPrefs.HasKey("SelectedOsuFile"))
@@ -191,7 +205,7 @@ public class SpawnNote : MonoBehaviour
     {
         Transform realSpawn = null, realTarget = null;
 
-    
+
         switch (note.dir)
         {
             case "up": realSpawn = upSpawn; realTarget = upTarget; break;
@@ -265,7 +279,7 @@ public class SpawnNote : MonoBehaviour
         var n = obj.GetComponent<Note>();
         if (n == null) return;
 
-    
+
         n.targetRotation = realRotation;
 
         if (tryGhostHold)
@@ -325,7 +339,7 @@ public class SpawnNote : MonoBehaviour
         }
     }
 
-    
+
     Quaternion GetRotationForSpawn(Transform spawnTransform)
     {
         if (spawnTransform == upSpawn) return Quaternion.Euler(0, 0, 180);
@@ -342,6 +356,7 @@ public class SpawnNote : MonoBehaviour
         if (originalDir != "down") o.Add(downSpawn);
         if (originalDir != "left") o.Add(leftSpawn);
         if (originalDir != "right") o.Add(rightSpawn);
+        if (o.Count == 0) return null;
         return o[Random.Range(0, o.Count)];
     }
 

@@ -1,22 +1,37 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+﻿using UnityEngine;
+using UnityEngine.Audio; // 🔥 INTEGRASI MIXER
+using System.Collections;
 
 public class MainMenuAudioManager : MonoBehaviour
 {
+    public static MainMenuAudioManager Instance; // Opsional, jika diperlukan di script lain.
+
     [Header("Audio Clips")]
     public AudioClip clickSound;
     public AudioClip bgmMusic;
 
+    [Header("Mixer Groups")] // 🔥 BARU: Hubungkan ke grup BGM & SFX
+    public AudioMixerGroup bgmGroup;
+    public AudioMixerGroup sfxGroup;
+
     [Header("Settings")]
-    public float clickVolume = 0.7f;
-    public float bgmVolume = 0.5f;
+    [Range(0f, 1f)] public float clickVolume = 0.7f;
+    [Range(0f, 1f)] public float bgmVolume = 0.5f;
 
     private AudioSource bgmSource;
     private AudioSource sfxSource;
 
     void Awake()
     {
+        // Pastikan hanya ada satu instance dan persisten
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         // Buat 2 AudioSource: 1 untuk BGM, 1 untuk efek klik
         bgmSource = gameObject.AddComponent<AudioSource>();
         sfxSource = gameObject.AddComponent<AudioSource>();
@@ -27,15 +42,14 @@ public class MainMenuAudioManager : MonoBehaviour
             bgmSource.clip = bgmMusic;
             bgmSource.volume = bgmVolume;
             bgmSource.loop = true;
+            if (bgmGroup != null) bgmSource.outputAudioMixerGroup = bgmGroup; // HUBUNGKAN BGM
             bgmSource.Play();
         }
 
-        // Setup SFX
+        // Setup SFX (Klik)
         sfxSource.playOnAwake = false;
         sfxSource.volume = clickVolume;
-
-        // Opsional: supaya tidak hancur kalau menu ganti scene
-        DontDestroyOnLoad(gameObject);
+        if (sfxGroup != null) sfxSource.outputAudioMixerGroup = sfxGroup; // HUBUNGKAN SFX
     }
 
     public void PlayClick()
