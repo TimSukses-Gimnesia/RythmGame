@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine.Networking;
-using UnityEngine.Audio; // 🔥 DITAMBAHKAN
+using UnityEngine.Audio;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(AudioSource))]
@@ -26,15 +26,19 @@ public class SpawnNote : MonoBehaviour
     public float noteSpeed = 1.0f;
     public float holdNoteSpeed = 0.4f;
 
-
-    [Header("Phantom (Slide) Logic")]
+    [Header("Phantom & Ghost Logic")]
     [Range(0f, 1f)] public float phantomChance = 0.3f;
     public float phantomSmoothness = 0.2f;
-
-    [Header("Ghost Hold (Fade) Logic")]
     [Range(0f, 1f)] public float ghostHoldChance = 0.4f;
     public float ghostFadeSpeed = 5.0f;
-    // ==========================================
+
+    // 🔥 PENGATURAN DECOY
+    [Header("Decoy (Rhythmic Gap Filler)")]
+    public bool enableDecoys = true;
+    [Tooltip("Decoy akan hancur X detik sebelum mencapai hit point (misal 0.2s)")]
+    public float decoyDespawnOffset = 0.3f;
+    [Tooltip("Seberapa padat decoy mengisi celah kosong (0.0 - 1.0)")]
+    [Range(0f, 1f)] public float decoyDensity = 0.5f;
 
     [Header("Prefabs")]
     public GameObject normalNotePrefab;
@@ -53,10 +57,9 @@ public class SpawnNote : MonoBehaviour
     public Transform upSpawn, downSpawn, leftSpawn, rightSpawn;
     public Transform upTarget, downTarget, leftTarget, rightTarget;
 
-    // 🔥 VARIBEL MIXER DITAMBAHKAN
     [Header("Audio Mixer")]
     public AudioMixerGroup musicGroup;
-    public AudioMixerGroup sfxGroup; // DITAMBAHKAN (untuk fleksibilitas, meskipun tidak dipakai di AudioSource ini)
+    public AudioMixerGroup sfxGroup;
 
     [HideInInspector] public double songStartDspTime;
     private AudioSource audioSource;
@@ -72,14 +75,13 @@ public class SpawnNote : MonoBehaviour
         instance = this;
         audioSource = GetComponent<AudioSource>();
 
-        // 🔗 KONEKSI MUSIC MIXER
-        if (musicGroup != null)
-        {
-            audioSource.outputAudioMixerGroup = musicGroup;
-        }
+        // 🔗 Hubungkan Mixer
+        if (musicGroup != null) audioSource.outputAudioMixerGroup = musicGroup;
 
+        // Load Session Data
         phantomChance = GameSession.SelectedPhantomChance;
         osuFilePath = GameSession.SelectedOsuFile;
+
         if (string.IsNullOrEmpty(osuFilePath) && PlayerPrefs.HasKey("SelectedOsuFile"))
         {
             osuFilePath = PlayerPrefs.GetString("SelectedOsuFile");
@@ -90,12 +92,87 @@ public class SpawnNote : MonoBehaviour
         {
             string osuText = File.ReadAllText(osuFilePath);
             osuBeatmap = new TextAsset(osuText);
+
+            // 1. Load Chart & Data
             var chart = OsuBeatmapLoader.Load(osuBeatmap);
             audioLeadInSec = chart.audioLeadInSec;
             notes = chart.notes;
+
+            // 2. Kirim Data Kiai (Reff) ke Kiai Manager (Jika ada)
+            var kiaiManager = FindFirstObjectByType<KiaiEffectManager>();
+            if (kiaiManager != null)
+            {
+                kiaiManager.SetupTiming(chart.timingPoints);
+            }
+
+            // 3. Generate Decoys (Hanya di Mode Hard/Phantom tinggi)
+            if (enableDecoys && phantomChance >= 0.9f)
+            {
+                InjectDecoysIntoGaps(chart.timingPoints, notes);
+            }
+
+            // 4. Load Audio
             string beatmapDir = Path.GetDirectoryName(osuFilePath);
             LoadAudioFromBeatmap(beatmapDir, osuText);
         }
+    }
+
+    // 🔥 Logic Pengisi Celah Kosong (Decoy Injection)
+    void InjectDecoysIntoGaps(List<OsuBeatmapLoader.TimingPoint> timingPoints, List<OsuBeatmapLoader.OsuNote> existingNotes)
+    {
+        if (timingPoints == null || timingPoints.Count == 0) return;
+
+        // Tandai waktu yang sudah terisi note asli (+- 50ms)
+        HashSet<int> occupiedTimes = new HashSet<int>();
+        foreach (var n in existingNotes)
+        {
+            int tMs = Mathf.RoundToInt(n.timeSec * 1000);
+            for (int i = -50; i <= 50; i += 10) occupiedTimes.Add(tMs + i);
+        }
+
+        List<OsuBeatmapLoader.OsuNote> decoys = new List<OsuBeatmapLoader.OsuNote>();
+        string[] dirs = { "up", "down", "left", "right" };
+
+        // Loop setiap bagian BPM lagu
+        for (int i = 0; i < timingPoints.Count; i++)
+        {
+            var tp = timingPoints[i];
+            // Abaikan Green Line (inherit) untuk perhitungan beat, cari BPM point berikutnya
+            if (tp.beatLengthSec <= 0) continue;
+
+            float endTime = existingNotes[existingNotes.Count - 1].timeSec + 2f;
+            // Cari batas akhir BPM section ini
+            for (int j = i + 1; j < timingPoints.Count; j++)
+            {
+                if (timingPoints[j].beatLengthSec > 0) { endTime = timingPoints[j].timeSec; break; }
+            }
+
+            // Iterasi setiap ketukan (Beat)
+            for (float t = tp.timeSec; t < endTime; t += tp.beatLengthSec)
+            {
+                int checkTimeMs = Mathf.RoundToInt(t * 1000);
+
+                // Jika beat ini kosong (tidak ada note asli)
+                if (!occupiedTimes.Contains(checkTimeMs))
+                {
+                    // Roll Dadu Densitas
+                    if (Random.value < decoyDensity)
+                    {
+                        var decoy = new OsuBeatmapLoader.OsuNote();
+                        decoy.timeSec = t;
+                        decoy.type = "decoy"; // TIPE KHUSUS
+                        decoy.dir = dirs[Random.Range(0, dirs.Length)];
+                        decoy.holdDurationSec = 0;
+                        decoys.Add(decoy);
+                    }
+                }
+            }
+        }
+
+        // Masukkan Decoy ke list utama dan urutkan ulang
+        notes.AddRange(decoys);
+        notes.Sort((a, b) => a.timeSec.CompareTo(b.timeSec));
+        Debug.Log($"[SpawnNote] Generated {decoys.Count} Decoys.");
     }
 
     void LoadAudioFromBeatmap(string beatmapDir, string osuText)
@@ -122,7 +199,7 @@ public class SpawnNote : MonoBehaviour
 
     IEnumerator LoadAudioClip(string path)
     {
-        if (countdownText != null) countdownText.text = "Loading Audio...";
+        if (countdownText != null) countdownText.text = "Loading...";
         string url = "file:///" + path.Replace("\\", "/");
         using (var www = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.UNKNOWN))
         {
@@ -150,7 +227,7 @@ public class SpawnNote : MonoBehaviour
         float timer = preGameCountdown;
         while (timer > 0f)
         {
-            if (countdownText != null) countdownText.text = $"Start in : {Mathf.Ceil(timer)}";
+            if (countdownText != null) countdownText.text = $"Start: {Mathf.Ceil(timer)}";
             timer -= Time.deltaTime;
             yield return null;
         }
@@ -162,6 +239,8 @@ public class SpawnNote : MonoBehaviour
         if (isGameOver || !isSongReady || notes == null || audioSource.clip == null) return;
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
+
+        // Loop Spawn (Termasuk Decoy)
         for (int i = notes.Count - 1; i >= 0; i--)
         {
             var note = notes[i];
@@ -185,27 +264,12 @@ public class SpawnNote : MonoBehaviour
         if (ui != null) ui.ShowLevelComplete(HitJudgement.score);
     }
 
-    public static void FreezeGameplay()
-    {
-        if (instance != null) instance.InternalFreezeGameplay();
-    }
-
-    private void InternalFreezeGameplay()
-    {
-        if (isGameOver) return;
-        isGameOver = true;
-        isSongReady = false;
-        if (audioSource != null) audioSource.Stop();
-        Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None);
-        foreach (var note in allNotes) note.enabled = false;
-    }
-
+    public static void FreezeGameplay() { if (instance != null) instance.InternalFreezeGameplay(); }
+    private void InternalFreezeGameplay() { if (isGameOver) return; isGameOver = true; isSongReady = false; if (audioSource != null) audioSource.Stop(); Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None); foreach (var note in allNotes) note.enabled = false; }
 
     void SpawnOne(OsuBeatmapLoader.OsuNote note, float hitTimeSec, float speedForThisNote, float effectiveTravelDuration)
     {
         Transform realSpawn = null, realTarget = null;
-
-
         switch (note.dir)
         {
             case "up": realSpawn = upSpawn; realTarget = upTarget; break;
@@ -213,159 +277,100 @@ public class SpawnNote : MonoBehaviour
             case "left": realSpawn = leftSpawn; realTarget = leftTarget; break;
             case "right": realSpawn = rightSpawn; realTarget = rightTarget; break;
         }
-
         if (realSpawn == null || realTarget == null) return;
 
         Quaternion realRotation = GetRotationForSpawn(realSpawn);
 
-        // 2. Hitung Peluang Ghost/Phantom
+        // Logic Note Special
         bool tryGhostHold = (note.type == "hold") && (Random.value < ghostHoldChance);
-        bool tryPhantomSlide = (note.type != "hold") && (Random.value < phantomChance);
+        bool tryPhantomSlide = (note.type != "hold" && note.type != "decoy") && (Random.value < phantomChance);
 
-        // 3. Pilih Prefab & Setting Awal
         GameObject prefabToSpawn = null;
         Transform fakeSpawnTransform = null;
         Transform fakeTargetTransform = null;
-        Quaternion spawnRotation = realRotation; // Default rotasi asli
+        Quaternion spawnRotation = realRotation;
 
-        if (note.type == "hold")
-        {
-            prefabToSpawn = holdNotePrefab;
-        }
-        else if (tryPhantomSlide && phantomNotePrefab != null)
-        {
-            prefabToSpawn = phantomNotePrefab;
-        }
+        if (note.type == "hold") prefabToSpawn = holdNotePrefab;
+        else if (tryPhantomSlide && phantomNotePrefab != null) prefabToSpawn = phantomNotePrefab;
         else
         {
-            normalNoteCounter++;
-            if (normalNoteCounter >= 30 && obstaclePrefab != null)
-            {
-                prefabToSpawn = obstaclePrefab;
-                normalNoteCounter = 0;
-            }
+            if (note.type == "obstacle") prefabToSpawn = obstaclePrefab;
             else
             {
-                prefabToSpawn = normalNotePrefab;
+                if (note.type != "decoy")
+                {
+                    normalNoteCounter++;
+                    if (normalNoteCounter >= 30 && obstaclePrefab != null) { prefabToSpawn = obstaclePrefab; normalNoteCounter = 0; }
+                    else prefabToSpawn = normalNotePrefab;
+                }
+                else
+                {
+                    prefabToSpawn = normalNotePrefab; // Decoy pakai prefab normal
+                }
             }
         }
 
-        // 🔥 Jika Ghost/Phantom, cari jalur palsu & GUNAKAN ROTASI PALSU untuk spawn awal
         if (tryGhostHold || tryPhantomSlide)
         {
             fakeSpawnTransform = GetRandomOtherSpawn(note.dir);
             fakeTargetTransform = GetCorrespondingTarget(fakeSpawnTransform);
-
-            // Ubah rotasi spawn jadi rotasi jalur palsu agar visual tidak aneh saat muncul
             spawnRotation = GetRotationForSpawn(fakeSpawnTransform);
         }
 
         GameObject obj = Instantiate(prefabToSpawn, realSpawn.position, spawnRotation);
 
-        if (prefabToSpawn == obstaclePrefab)
-        {
-            var ob = obj.GetComponent<Obstacle>();
-            if (ob != null)
-            {
-                ob.hitTime = hitTimeSec;
-                ob.spawnPos = realSpawn.position;
-                ob.targetPos = realTarget.position;
-                ob.travelDuration = travelDuration;
-                ob.speed = speedForThisNote;
-            }
-            return;
-        }
+        if (prefabToSpawn == obstaclePrefab) { var ob = obj.GetComponent<Obstacle>(); if (ob != null) { ob.hitTime = hitTimeSec; ob.spawnPos = realSpawn.position; ob.targetPos = realTarget.position; ob.travelDuration = travelDuration; ob.speed = speedForThisNote; } return; }
 
         var n = obj.GetComponent<Note>();
         if (n == null) return;
 
-
         n.targetRotation = realRotation;
-
-        if (tryGhostHold)
-        {
-            n.isGhostHold = true;
-            n.isPhantom = false;
-            n.ghostSwitchPoint = 0.5f;
-            n.fadeSpeed = ghostFadeSpeed;
-
-            n.fakeSpawnPos = fakeSpawnTransform.position;
-            n.fakeTargetPos = fakeTargetTransform.position;
-        }
-        else if (tryPhantomSlide)
-        {
-            n.isPhantom = true;
-            n.isGhostHold = false;
-            n.switchThreshold = Random.Range(0.4f, 0.6f);
-            n.transitionDuration = phantomSmoothness;
-
-            n.fakeSpawnPos = fakeSpawnTransform.position;
-            n.fakeTargetPos = fakeTargetTransform.position;
-        }
-        else
-        {
-            n.isPhantom = false;
-            n.isGhostHold = false;
-        }
-
         n.hitTime = hitTimeSec;
         n.spawnPos = realSpawn.position;
         n.targetPos = realTarget.position;
         n.travelDuration = travelDuration;
         n.speed = speedForThisNote;
         n.dir = note.dir;
-        n.type = note.type;
+        n.type = note.type; // "decoy", "note", "hold"
         n.holdDurationSec = note.holdDurationSec;
+
+        // Setup Decoy Param
+        if (note.type == "decoy")
+        {
+            n.despawnOffset = decoyDespawnOffset;
+            n.isPhantom = false;
+            n.isGhostHold = false;
+        }
+        else if (tryGhostHold)
+        {
+            n.isGhostHold = true; n.ghostSwitchPoint = 0.5f; n.fadeSpeed = ghostFadeSpeed;
+            n.fakeSpawnPos = fakeSpawnTransform.position; n.fakeTargetPos = fakeTargetTransform.position;
+        }
+        else if (tryPhantomSlide)
+        {
+            n.isPhantom = true; n.switchThreshold = Random.Range(0.4f, 0.6f); n.transitionDuration = phantomSmoothness;
+            n.fakeSpawnPos = fakeSpawnTransform.position; n.fakeTargetPos = fakeTargetTransform.position;
+        }
 
         float d = Vector3.Distance(n.spawnPos, n.targetPos);
         n.noteMoveSpeed = d / effectiveTravelDuration;
-
         n.SetupVisuals();
 
-        if (enableTimingCircle && timingCirclePrefab != null && note.type != "hold")
+        // Timing Circle (Kecuali Decoy)
+        if (enableTimingCircle && timingCirclePrefab != null && note.type != "hold" && note.type != "decoy")
         {
             GameObject circleGO = Instantiate(timingCirclePrefab, obj.transform.position, Quaternion.identity, effectsParent);
             var tc = circleGO.GetComponent<TimingCircle>();
             if (tc != null)
             {
-                tc.hitTime = hitTimeSec;
-                tc.travelDuration = effectiveTravelDuration;
-                tc.startDsp = songStartDspTime;
-                tc.followTarget = obj.transform;
-                float noteScale = obj.transform.localScale.x;
-                tc.startScale = timingCircleStartScale * noteScale;
-                tc.endScale = timingCircleEndScale * noteScale;
+                tc.hitTime = hitTimeSec; tc.travelDuration = effectiveTravelDuration; tc.startDsp = songStartDspTime;
+                tc.followTarget = obj.transform; float noteScale = obj.transform.localScale.x;
+                tc.startScale = timingCircleStartScale * noteScale; tc.endScale = timingCircleEndScale * noteScale;
             }
         }
     }
 
-
-    Quaternion GetRotationForSpawn(Transform spawnTransform)
-    {
-        if (spawnTransform == upSpawn) return Quaternion.Euler(0, 0, 180);
-        if (spawnTransform == downSpawn) return Quaternion.Euler(0, 0, 0);
-        if (spawnTransform == leftSpawn) return Quaternion.Euler(0, 0, -90);
-        if (spawnTransform == rightSpawn) return Quaternion.Euler(0, 0, 90);
-        return Quaternion.identity;
-    }
-
-    Transform GetRandomOtherSpawn(string originalDir)
-    {
-        List<Transform> o = new List<Transform>();
-        if (originalDir != "up") o.Add(upSpawn);
-        if (originalDir != "down") o.Add(downSpawn);
-        if (originalDir != "left") o.Add(leftSpawn);
-        if (originalDir != "right") o.Add(rightSpawn);
-        if (o.Count == 0) return null;
-        return o[Random.Range(0, o.Count)];
-    }
-
-    Transform GetCorrespondingTarget(Transform t)
-    {
-        if (t == upSpawn) return upTarget;
-        if (t == downSpawn) return downTarget;
-        if (t == leftSpawn) return leftTarget;
-        if (t == rightSpawn) return rightTarget;
-        return null;
-    }
+    Quaternion GetRotationForSpawn(Transform t) { if (t == upSpawn) return Quaternion.Euler(0, 0, 180); if (t == downSpawn) return Quaternion.Euler(0, 0, 0); if (t == leftSpawn) return Quaternion.Euler(0, 0, -90); if (t == rightSpawn) return Quaternion.Euler(0, 0, 90); return Quaternion.identity; }
+    Transform GetRandomOtherSpawn(string d) { List<Transform> o = new List<Transform>(); if (d != "up") o.Add(upSpawn); if (d != "down") o.Add(downSpawn); if (d != "left") o.Add(leftSpawn); if (d != "right") o.Add(rightSpawn); if (o.Count == 0) return null; return o[Random.Range(0, o.Count)]; }
+    Transform GetCorrespondingTarget(Transform t) { if (t == upSpawn) return upTarget; if (t == downSpawn) return downTarget; if (t == leftSpawn) return leftTarget; if (t == rightSpawn) return rightTarget; return null; }
 }

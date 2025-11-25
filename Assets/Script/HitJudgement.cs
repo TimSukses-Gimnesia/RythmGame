@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 
 public class HitJudgement : MonoBehaviour
 {
     // declare awal ketika mulai game
-    public static long score = 0;      
+    public static long score = 0;
     public static int combo = 0;
     public static float health;
 
@@ -14,18 +14,17 @@ public class HitJudgement : MonoBehaviour
     public static int countGood;
     public static int countMiss;
 
-  
     [Header("Lane Settings")]
     public string targetDirection;
-    public Key targetKey; 
+    public Key targetKey;
 
     [Header("Timing Windows (detik)")]
     public float perfectTime = 0.05f;
     public float goodTime = 0.1f;
 
     [Header("UI Popup & Sprites")]
-    public GameObject popupPrefab;   
-    public Transform popupContainer; 
+    public GameObject popupPrefab;
+    public Transform popupContainer;
     public Sprite perfectSprite;
     public Sprite goodSprite;
     public Sprite missSprite;
@@ -41,9 +40,10 @@ public class HitJudgement : MonoBehaviour
     [Header("VFX")]
     public GameObject hitEffectPrefab;
     public Transform effectsParent;
-    public string effectSortingLayer = "Default";   
+    public string effectSortingLayer = "Default";
     public int effectSortingOrder = 20;
     public bool enableHitEffect = true;
+
     // Internal Variables
     private List<Note> notesInTrigger = new List<Note>();
     private SpawnNote spawner;
@@ -100,7 +100,7 @@ public class HitJudgement : MonoBehaviour
             ApplyHealth(goodHealthGain);
             spriteToShow = goodSprite;
             countGood++;
-            CameraShake.Shake(0.05f, 0.04f);    
+            CameraShake.Shake(0.05f, 0.04f);
         }
 
         // Simpan judgement awal untuk Hold Note (biar adil saat dilepas nanti)
@@ -130,7 +130,7 @@ public class HitJudgement : MonoBehaviour
             if (note.initialJudgement == "Good")
             {
                 spriteToShow = goodSprite;
-                countGood++; 
+                countGood++;
                 PlayHitSFX("Good");
                 CameraShake.Shake(0.05f, 0.04f);
             }
@@ -148,7 +148,7 @@ public class HitJudgement : MonoBehaviour
 
             spriteToShow = (breakSprite != null) ? breakSprite : missSprite;
             Debug.Log("MISS TERJADI! Alasan: HOLD BREAK (Lepas Tombol)");
-            countMiss++; 
+            countMiss++;
             PlayHitSFX("BREAK");
         }
 
@@ -160,7 +160,8 @@ public class HitJudgement : MonoBehaviour
 
     void HandleMiss(Note note)
     {
-        if (note == null || note.isHit) return;
+        // Safety Check: Decoy tidak boleh men-trigger Miss
+        if (note == null || note.isHit || note.type == "decoy") return;
         if (note == currentlyHoldingNote) currentlyHoldingNote = null;
 
         SpawnPopup(missSprite);
@@ -168,21 +169,19 @@ public class HitJudgement : MonoBehaviour
         combo = 0;
         ApplyHealth(-missHealthPenalty);
         PlayHitSFX("Miss");
-        countMiss++; 
+        countMiss++;
         DamageEffect.Instance.TriggerFlash();
-        
+
         note.isHit = true;
         Destroy(note.gameObject);
-
     }
 
     void SpawnPopup(Sprite sprite)
     {
         if (popupPrefab != null && sprite != null && popupContainer != null)
         {
-           
             GameObject newPopup = Instantiate(popupPrefab, popupContainer);
-            newPopup.transform.localPosition = Vector3.zero; 
+            newPopup.transform.localPosition = Vector3.zero;
 
             var hp = newPopup.GetComponent<HitPopup>();
             if (hp != null) hp.Setup(sprite);
@@ -228,8 +227,6 @@ public class HitJudgement : MonoBehaviour
         return "Miss";
     }
 
- 
- 
     bool IsLaneKeyPressed()
     {
         if (Keyboard.current == null) return false;
@@ -280,13 +277,25 @@ public class HitJudgement : MonoBehaviour
         if (spawner == null || spawner.songStartDspTime == 0.0) return;
         double songTime = AudioSettings.dspTime - spawner.songStartDspTime;
 
+        // 1. Cek Note yang kelewat (MISS)
         while (notesInTrigger.Count > 0 && songTime > notesInTrigger[0].hitTime + goodTime)
         {
             Note noteToMiss = notesInTrigger[0];
             notesInTrigger.RemoveAt(0);
-            HandleMiss(noteToMiss);
+
+            // Decoy tidak boleh trigger Miss
+            if (noteToMiss.type != "decoy")
+            {
+                HandleMiss(noteToMiss);
+            }
+            else
+            {
+                // Kalau ada decoy tersisa di list (misal glitch), hancurkan saja
+                Destroy(noteToMiss.gameObject);
+            }
         }
 
+        // 2. Logic Hold Note (Sedang Ditekan)
         if (currentlyHoldingNote != null)
         {
             double holdEndTime = currentlyHoldingNote.hitTime + currentlyHoldingNote.holdDurationSec;
@@ -313,12 +322,25 @@ public class HitJudgement : MonoBehaviour
             }
         }
 
-        // 3. Logic Tap Note
+        // 3. Logic Tap Note (Input Baru)
         if (currentlyHoldingNote == null && WasLaneKeyPressedThisFrame())
         {
             if (notesInTrigger.Count > 0)
             {
                 Note noteToHit = notesInTrigger[0];
+
+                // 🔥 [FILTER DECOY]: Jika yang ditekan adalah DECOY
+                if (noteToHit.type == "decoy")
+                {
+                    // Hapus dari list trigger
+                    notesInTrigger.RemoveAt(0);
+                    // Hancurkan objek visualnya (seolah-olah kena hit)
+                    Destroy(noteToHit.gameObject);
+                    // KELUAR DARI FUNGSI -> Jangan hitung skor, jangan kurangi health
+                    return;
+                }
+
+                // --- LOGIC NORMAL NOTE DI BAWAH INI ---
                 double timeDiff = System.Math.Abs(songTime - noteToHit.hitTime);
                 string judgement = GetJudgement(timeDiff);
 
@@ -339,6 +361,7 @@ public class HitJudgement : MonoBehaviour
                 }
                 else
                 {
+                    // Terlalu cepat nekan (tapi bukan decoy) -> Miss
                     notesInTrigger.RemoveAt(0);
                     HandleMiss(noteToHit);
                 }
@@ -349,6 +372,10 @@ public class HitJudgement : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         Note note = other.GetComponent<Note>();
+        // Kita biarkan DECOY masuk ke list notesInTrigger.
+        // Tujuannya: Jika pemain menekan tombol saat Decoy lewat, kode di Update() 
+        // akan mendeteksi bahwa note terdekat adalah Decoy, lalu menghancurkannya (prank).
+        // Jika kita filter di sini, input pemain akan menembus Decoy dan mungkin kena note asli di belakangnya (timing salah).
         if (note != null && note.dir == targetDirection && !note.isHit)
         {
             notesInTrigger.Add(note);

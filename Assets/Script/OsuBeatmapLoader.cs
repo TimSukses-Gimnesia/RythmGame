@@ -3,23 +3,31 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using UnityEngine;
-using System.Linq; // Ditambahkan untuk parsing ExtraData
+using System.Linq;
 
 public static class OsuBeatmapLoader
 {
     public class OsuChart
     {
-        public string audioFilename;      // dari [General] AudioFilename
-        public float audioLeadInSec;      // dari [General] AudioLeadIn (ms → detik)
-        public List<OsuNote> notes = new List<OsuNote>();
+        public string audioFilename;      // Nama file lagu
+        public float audioLeadInSec;      // Lead-in time
+        public List<OsuNote> notes = new List<OsuNote>(); // Daftar semua note
+        public List<TimingPoint> timingPoints = new List<TimingPoint>(); // 🔥 Data BPM & Kiai
+    }
+
+    // Class untuk menyimpan data Timing (BPM & Reff)
+    public class TimingPoint
+    {
+        public float timeSec;
+        public float beatLengthSec; // Durasi satu ketukan (detik)
+        public bool isKiai;         // Apakah ini bagian Reff?
     }
 
     public class OsuNote
     {
-        public float timeSec;             // detik absolut sejak audio mulai
+        public float timeSec;
         public string dir;
-        // Sekarang bisa: "note", "hold", atau "obstacle"
-        public string type = "note"; 
+        public string type = "note"; // "note", "hold", "obstacle", "decoy"
         public float holdDurationSec = 0f;
     }
 
@@ -34,7 +42,7 @@ public static class OsuBeatmapLoader
             while ((line = sr.ReadLine()) != null) all.Add(line);
         }
 
-        // --- [General]: AudioFilename & AudioLeadIn (Logic ini sudah benar) ---
+        // --- 1. Parsing [General] ---
         bool inGeneral = false;
         foreach (var raw in all)
         {
@@ -46,8 +54,7 @@ public static class OsuBeatmapLoader
             if (s.StartsWith("AudioFilename", StringComparison.OrdinalIgnoreCase))
             {
                 int idx = s.IndexOf(':');
-                if (idx >= 0)
-                    chart.audioFilename = s.Substring(idx + 1).Trim().Trim('\"');
+                if (idx >= 0) chart.audioFilename = s.Substring(idx + 1).Trim().Trim('\"');
             }
             else if (s.StartsWith("AudioLeadIn", StringComparison.OrdinalIgnoreCase))
             {
@@ -61,7 +68,62 @@ public static class OsuBeatmapLoader
             }
         }
 
-        // --- [HitObjects]: Memproses Notes dan Obstacles ---
+        // --- 2. Parsing [TimingPoints] (BPM & Kiai) ---
+        bool inTiming = false;
+        foreach (var raw in all)
+        {
+            var s = raw.Trim();
+            if (s.StartsWith("[TimingPoints]")) { inTiming = true; continue; }
+            if (inTiming && s.StartsWith("[")) break;
+            if (!inTiming || string.IsNullOrWhiteSpace(s)) continue;
+
+            var parts = s.Split(',');
+            if (parts.Length < 2) continue;
+
+            // Format .osu: time,beatLength,meter,sampleSet,sampleIndex,volume,uninherited,effects
+            if (float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float timeMs) &&
+                float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float beatLengthMs))
+            {
+                // beatLength positif = Perubahan BPM (Red Line)
+                // beatLength negatif = Perubahan Speed/Volume (Green Line) -> Kita tetap ambil untuk data Kiai
+
+                bool kiai = false;
+                // Cek kolom ke-8 (index 7) untuk Effects Flag
+                if (parts.Length >= 8)
+                {
+                    if (int.TryParse(parts[7], out int effects))
+                    {
+                        // Bit 0 (ganjil) menandakan Kiai Time aktif
+                        kiai = (effects & 1) != 0;
+                    }
+                }
+
+                // Kita simpan data timing yang relevan (BPM change) atau Event change (Kiai)
+                if (beatLengthMs > 0) // Hanya ambil BPM utama untuk kalkulasi Decoy
+                {
+                    chart.timingPoints.Add(new TimingPoint
+                    {
+                        timeSec = timeMs / 1000f,
+                        beatLengthSec = beatLengthMs / 1000f,
+                        isKiai = kiai
+                    });
+                }
+                else // Green line (Inherited), ambil data Kiai-nya saja, beatLength pakai previous
+                {
+                    // Untuk simplifikasi decoy, kita skip logic complex green line beatLength,
+                    // tapi kita tetap butuh data Kiai start/end dari sini.
+                    // (Implementasi Kiai Manager nanti akan membaca list ini urut waktu)
+                    chart.timingPoints.Add(new TimingPoint
+                    {
+                        timeSec = timeMs / 1000f,
+                        beatLengthSec = -1, // Penanda ini inherited
+                        isKiai = kiai
+                    });
+                }
+            }
+        }
+
+        // --- 3. Parsing [HitObjects] ---
         bool inHit = false;
         foreach (var raw in all)
         {
@@ -70,96 +132,59 @@ public static class OsuBeatmapLoader
             if (inHit && s.StartsWith("[")) break;
             if (!inHit || string.IsNullOrWhiteSpace(s)) continue;
 
-            // Format: x,y,time,type,hitSound,objectParams,hitSample
             var parts = s.Split(',');
             if (parts.Length < 6) continue;
 
-            // Parsing dasar
             int x, y, timeMs, type;
-            if (!int.TryParse(parts[0], out x) || 
+            if (!int.TryParse(parts[0], out x) ||
                 !int.TryParse(parts[1], out y) ||
                 !int.TryParse(parts[2], out timeMs) ||
-                !int.TryParse(parts[3], out type))
-            {
-                continue; // Skip baris yang gagal parsing
-            }
+                !int.TryParse(parts[3], out type)) continue;
 
-
-            // --- PENTING: LOGIKA FILTER BARU ---
-            // 1. Abaikan Slider (2) dan Spinner (8) standar, kecuali jika itu adalah Obstacle kita (13).
+            // Filter Slider/Spinner standar osu! (kecuali type 13 Obstacle kita)
             if (((type & 2) != 0 || (type & 8) != 0) && type != 13) continue;
-            
-            // Kita hanya peduli pada Hit Circle (1), Hold Note Mania (128), atau Custom Obstacle (13)
             if ((type & 1) == 0 && (type & 128) == 0 && type != 13) continue;
-            // ------------------------------------
 
+            float timeSec = timeMs / 1000f;
+            var note = new OsuNote { timeSec = timeSec };
 
-            float timeSec = timeMs / 1000f; // detik absolut sejak awal audio
-            var note = new OsuNote
-            {
-                timeSec = timeSec
-            };
-            
-            // --- Cek Tipe Khusus (Obstacle) ---
-            if (type == 13)
+            if (type == 13) // Custom Obstacle
             {
                 note.type = "obstacle";
-                // Ambil arah (left/up/right/down) dari ExtraData (parts[5])
-                // Format: DIR:0:0:0:
                 var dirParts = parts[5].Split(':');
-                if (dirParts.Length > 0)
-                {
-                    // note.dir akan diisi dengan "left", "up", "down", dll.
-                    note.dir = dirParts[0]; 
-                }
-                else
-                {
-                    // Fallback jika ExtraData tidak ada
-                    note.dir = "up"; 
-                }
+                note.dir = (dirParts.Length > 0) ? dirParts[0] : "up";
             }
-            // --- Cek Tipe Hold Note Mania (128) ---
-            else if ((type & 128) != 0)
+            else if ((type & 128) != 0) // Hold Note
             {
                 note.type = "hold";
-                note.dir = XYToDirection(x, y); // Gunakan mapping XY
-                
-                // objectParams berisi endTime:hitSample
+                note.dir = XYToDirection(x, y);
                 var objParams = parts[5].Split(':');
                 if (objParams.Length > 0 && int.TryParse(objParams[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int endTimeMs))
                 {
-                    float endTimeSec = endTimeMs / 1000f;
-                    note.holdDurationSec = Mathf.Max(0f, endTimeSec - timeSec);
-                }
-                else
-                {
-                    // Fallback jika gagal parse endTime
-                    note.type = "note";
-                    note.holdDurationSec = 0f;
+                    note.holdDurationSec = Mathf.Max(0f, (endTimeMs / 1000f) - timeSec);
                 }
             }
-            // --- Note Biasa (Hit Circle) ---
-            else 
+            else // Normal Note
             {
                 note.type = "note";
-                note.dir = XYToDirection(x, y); // Gunakan mapping XY
+                note.dir = XYToDirection(x, y);
                 note.holdDurationSec = 0f;
             }
 
             chart.notes.Add(note);
         }
+
         chart.notes.Sort((a, b) => a.timeSec.CompareTo(b.timeSec));
+        chart.timingPoints.Sort((a, b) => a.timeSec.CompareTo(b.timeSec)); // Penting urut waktu
+
         return chart;
     }
 
     static string XYToDirection(int x, int y)
     {
-        // Mapping ini digunakan untuk Note dan Hold Note
-        // x=64 (lane 1), x=192 (lane 2), x=320 (lane 3), x=448 (lane 4)
-
-        if (x < 100) return "left";  // (x=64)
-        if (x < 250) return "down";  // (x=192)
-        if (x < 400) return "up";    // (x=320)
-        return "right";              // (x=448)
+        if (x < 100) return "left";
+        if (x < 250) return "down";
+        if (x < 400) return "up";
+        return "right";
     }
 }

@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 1710909867390892515}
   - component: {fileID: -5284028751936394003}
   - component: {fileID: 8931012220323305809}
+  - component: {fileID: -5060978939775545692}
+  - component: {fileID: -2757306200185706611}
   m_Layer: 0
   m_Name: NoteSpawn
   m_TagString: Untagged
@@ -111,18 +113,27 @@ MonoBehaviour:
   dir: 
   type: 
   holdDurationSec: 0
+  activeHoldColor: {r: 1, g: 0.85, b: 0, a: 1}
+  despawnOffset: 0.3
+  decoyVanishEffect: {fileID: 729268754880250053, guid: 57550ce1ddab06b438ab93c5ce5ac484, type: 3}
   spawnPos: {x: 0, y: 0, z: 0}
   targetPos: {x: 0, y: 0, z: 0}
   travelDuration: 0
   speed: 1.2
   noteMoveSpeed: 0
+  initialJudgement: Perfect
   isPhantom: 0
   fakeSpawnPos: {x: 0, y: 0, z: 0}
   fakeTargetPos: {x: 0, y: 0, z: 0}
   switchThreshold: 0.5
   transitionDuration: 0.2
+  switchEffectPrefab: {fileID: 0}
+  isGhostHold: 0
+  ghostSwitchPoint: 0.5
+  fadeSpeed: 4
   isHit: 0
   forceTiledDrawMode: 1
+  targetRotation: {x: 0, y: 0, z: 0, w: 0}
   head: {fileID: 0}
   body: {fileID: 0}
   tail: {fileID: 0}
@@ -191,3 +202,34 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &-5060978939775545692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8946434144321846813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b94ea8b9a846144abf3cea4d7c38e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DecoyColorChanger
+  startColor: {r: 1, g: 1, b: 1, a: 1}
+  endColor: {r: 0, g: 0, b: 0, a: 1}
+  startChangePoint: 0.5
+  endChangePoint: 1
+--- !u!114 &-2757306200185706611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8946434144321846813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3752d6d77cd28ed488828ec5e4f6cbee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DecoyVisual
+  glitchColor: {r: 0, g: 0, b: 0, a: 0.6}
+  shakeAmount: 0.05
+  flickerSpeed: 0.1
