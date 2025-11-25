@@ -64,7 +64,7 @@ public class SpawnNote : MonoBehaviour
     {
         instance = this;
         audioSource = GetComponent<AudioSource>();
-
+        phantomChance = GameSession.SelectedPhantomChance;
         osuFilePath = GameSession.SelectedOsuFile;
         if (string.IsNullOrEmpty(osuFilePath) && PlayerPrefs.HasKey("SelectedOsuFile"))
         {
