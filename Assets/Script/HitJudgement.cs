@@ -93,12 +93,14 @@ public class HitJudgement : MonoBehaviour
             ApplyHealth(perfectHealthGain);
             spriteToShow = perfectSprite;
             countPerfect++;
+            CameraShake.Shake(0.08f, 0.07f);
         }
         else if (judgement == "Good")
         {
             ApplyHealth(goodHealthGain);
             spriteToShow = goodSprite;
-            countGood++;    
+            countGood++;
+            CameraShake.Shake(0.05f, 0.04f);    
         }
 
         // Simpan judgement awal untuk Hold Note (biar adil saat dilepas nanti)
@@ -130,11 +132,13 @@ public class HitJudgement : MonoBehaviour
                 spriteToShow = goodSprite;
                 countGood++; 
                 PlayHitSFX("Good");
+                CameraShake.Shake(0.05f, 0.04f);
             }
             else
             {
                 spriteToShow = perfectSprite;
                 countPerfect++;
+                CameraShake.Shake(0.08f, 0.07f);
             }
         }
         else
@@ -165,7 +169,8 @@ public class HitJudgement : MonoBehaviour
         ApplyHealth(-missHealthPenalty);
         PlayHitSFX("Miss");
         countMiss++; 
-
+        DamageEffect.Instance.TriggerFlash();
+        
         note.isHit = true;
         Destroy(note.gameObject);
 
