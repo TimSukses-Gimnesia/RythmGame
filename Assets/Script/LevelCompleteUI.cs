@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class LevelCompleteUI : MonoBehaviour
 {
@@ -17,204 +18,163 @@ public class LevelCompleteUI : MonoBehaviour
     [Header("Feedback")]
     public TMP_Text motivationalText;
 
-    [Header("Statistics (Jumlah Hit)")]
+    [Header("Statistics")]
     public TMP_Text perfectCountText;
     public TMP_Text goodCountText;
     public TMP_Text missCountText;
 
-    [Header("Rank Display")]
-    public TMP_Text rankText;
+    [Header("Rank Sprite Display")]
+    public Image rankSpriteHolder;
+    public Sprite rankSprite_S;
+    public Sprite rankSprite_A;
+    public Sprite rankSprite_B;
+    public Sprite rankSprite_C;
+    public Sprite rankSprite_D;
 
     [Header("Buttons")]
     public Button retryButton;
     public Button mainMenuButton;
+    public Button highscoreButton;
+    public Button highscoreCloseButton;
 
     [Header("Highscore UI")]
     public GameObject highscorePanel;
     public TMP_Text highscoreText;
-    public Button highscoreCloseButton;
-    public Button highscoreButton;
 
-    // --- Definisi Warna ---
-    private static readonly Color ColorS = new Color(1f, 0.84f, 0f);
-    private static readonly Color ColorA = Color.green;
-    private static readonly Color ColorB = Color.cyan;
-    private static readonly Color ColorC = new Color(1f, 0.64f, 0f);
-    private static readonly Color ColorD = Color.gray;
-    private static readonly Color ColorMotivation = new Color(0.8f, 0.4f, 1f);
+    [Header("Sound Effects")]
+    public AudioClip victorySFX;
+    public AudioClip confirmSFX;
+    public AudioClip hoverSFX;
 
+    private AudioSource sfxAudio;
     private bool isVisible = false;
-
-    void Awake()
-    {
-        var all = FindObjectsByType<LevelCompleteUI>(FindObjectsSortMode.None);
-        if (all.Length > 1)
-        {
-            Destroy(this);
-            return;
-        }
-
-        if (panel == null)
-            panel = transform.Find("LevelCompletePanel")?.gameObject;
-    }
 
     void Start()
     {
-        if (panel != null) panel.SetActive(false);
+        sfxAudio = gameObject.AddComponent<AudioSource>();
 
-        if (retryButton != null)
-            retryButton.onClick.AddListener(OnRetry);
+        if (panel != null)
+            panel.SetActive(false);
 
-        if (mainMenuButton != null)
-            mainMenuButton.onClick.AddListener(OnMainMenu);
-
-        if (highscoreButton != null)
-            highscoreButton.onClick.AddListener(OpenHighscores);
-
-        if (highscoreCloseButton != null)
-            highscoreCloseButton.onClick.AddListener(CloseHighscores);
+        retryButton?.onClick.AddListener(OnRetry);
+        mainMenuButton?.onClick.AddListener(OnMainMenu);
+        highscoreButton?.onClick.AddListener(OpenHighscores);
+        highscoreCloseButton?.onClick.AddListener(CloseHighscores);
 
         if (highscorePanel != null)
             highscorePanel.SetActive(false);
     }
 
+    // ============================================================
+    // SHOW RESULT PANEL
+    // ============================================================
     public void ShowLevelComplete(long finalScore)
     {
         if (isVisible) return;
         isVisible = true;
 
-        if (panel != null)
-            panel.SetActive(true);
+        panel.SetActive(true);
 
-        if (titleText != null)
-            titleText.text = "SONG COMPLETE!";
+        // Victory SFX
+        if (victorySFX)
+            sfxAudio.PlayOneShot(victorySFX);
 
-        // SCORE
-        if (scoreText != null)
-            scoreText.text = finalScore.ToString("N0");
+        titleText.text = "SONG COMPLETE!";
+        scoreText.text = finalScore.ToString("N0");
 
-        // ACCURACY
-        float accuracy = HitJudgement.GetAccuracy();
+        float acc = HitJudgement.GetAccuracy();
+        accuracyText.text = $"{acc:F2}%";
+        accuracySlider.value = acc / 100f;
 
-        if (accuracyText != null)
-            accuracyText.text = $"{accuracy:F2}%";
+        perfectCountText.text = HitJudgement.countPerfect.ToString();
+        goodCountText.text = HitJudgement.countGood.ToString();
+        missCountText.text = HitJudgement.countMiss.ToString();
 
-        if (accuracySlider != null)
-            accuracySlider.value = accuracy / 100f;
+        SetRankSprite(acc);
 
-        // STATISTICS
-        if (perfectCountText != null)
-            perfectCountText.text = HitJudgement.countPerfect.ToString();
+        motivationalText.text = GetMotivationalFeedback(acc);
 
-        if (goodCountText != null)
-            goodCountText.text = HitJudgement.countGood.ToString();
-
-        if (missCountText != null)
-            missCountText.text = HitJudgement.countMiss.ToString();
-
-        // RANK & FEEDBACK
-        if (rankText != null)
-            SetRankText(accuracy);
-
-        if (motivationalText != null)
-            motivationalText.text = GetMotivationalFeedback(accuracy);
-
-        // Save highscore
         HighscoreManager.AddScore(GameSession.SelectedBeatmapName, finalScore);
     }
 
-  
+    // ============================================================
+    // RANK SPRITE SELECTOR
+    // ============================================================
+    void SetRankSprite(float acc)
+    {
+        if (rankSpriteHolder == null) return;
+
+        if (acc >= 95f)
+            rankSpriteHolder.sprite = rankSprite_S;
+        else if (acc >= 90f)
+            rankSpriteHolder.sprite = rankSprite_A;
+        else if (acc >= 80f)
+            rankSpriteHolder.sprite = rankSprite_B;
+        else if (acc >= 70f)
+            rankSpriteHolder.sprite = rankSprite_C;
+        else
+            rankSpriteHolder.sprite = rankSprite_D;
+
+        rankSpriteHolder.preserveAspect = true; // supaya ukuran sprite sesuai texture
+    }
+
+    // ============================================================
+    // MOTIVATIONAL TEXT
+    // ============================================================
     string GetMotivationalFeedback(float acc)
     {
-        // Konversi warna ke string Hex RGB dengan ColorUtility
-        string colorSHex = ColorUtility.ToHtmlStringRGB(ColorS);
-        string colorMotivationHex = ColorUtility.ToHtmlStringRGB(ColorMotivation);
-        string colorDHex = ColorUtility.ToHtmlStringRGB(ColorD);
-
-        // Jika sudah Rank S
-        if (acc >= 95f)
-        {
-            return $"<color=#{colorSHex}>S Rank Achieved! Perfect synchronization!</color>";
-        }
-
-        // Jika mendekati Rank S (95%)
-        if (acc >= 94f)
-        {
-            float needed = 95f - acc;
-            return $"<color=#{colorMotivationHex}>So close! You're only {needed:F2}% away from S Rank!</color>";
-        }
-
-        // Jika mendekati Rank A (90%)
-        if (acc >= 85f)
-        {
-            float needed = 90f - acc;
-            return $"<color=#{colorMotivationHex}>Keep going! Push {needed:F2}% more for Rank A.</color>";
-        }
-
-        // Jika Rank B ke bawah
-        if (acc < 85f)
-        {
-            return $"<color=#{colorDHex}>Practice makes perfect. Focus on rhythm and timing!</color>";
-        }
-
-        return "";
+        if (acc >= 95f) return "S Rank! Absolute perfection!";
+        if (acc >= 90f) return "Amazing job! You're in the A tier!";
+        if (acc >= 80f) return "Great work! Solid B performance!";
+        if (acc >= 70f) return "Nice! You're getting better!";
+        return "Keep practicing — you can do this!";
     }
 
-    void SetRankText(float acc)
-    {
-        if (acc >= 95f)
-        {
-            rankText.text = "S";
-            rankText.color = ColorS;
-        }
-        else if (acc >= 90f)
-        {
-            rankText.text = "A";
-            rankText.color = ColorA;
-        }
-        else if (acc >= 80f)
-        {
-            rankText.text = "B";
-            rankText.color = ColorB;
-        }
-        else if (acc >= 70f)
-        {
-            rankText.text = "C";
-            rankText.color = ColorC;
-        }
-        else
-        {
-            rankText.text = "D";
-            rankText.color = ColorD;
-        }
-    }
-
+    // ============================================================
+    // BUTTONS WITH DELAY (prevent SFX cutting off)
+    // ============================================================
     public void OnRetry()
     {
-        Time.timeScale = 1f;
+        StartCoroutine(ReloadRoutine());
+    }
 
-        if (!string.IsNullOrEmpty(GameSession.SelectedOsuFile))
-            SceneManager.LoadScene("Gameplay");
-        else
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    private IEnumerator ReloadRoutine()
+    {
+        if (confirmSFX) sfxAudio.PlayOneShot(confirmSFX);
+        yield return new WaitForSecondsRealtime(0.15f);
+
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Gameplay");
     }
 
     public void OnMainMenu()
     {
+        StartCoroutine(MainMenuRoutine());
+    }
+
+    private IEnumerator MainMenuRoutine()
+    {
+        if (confirmSFX) sfxAudio.PlayOneShot(confirmSFX);
+        yield return new WaitForSecondsRealtime(0.15f);
+
         Time.timeScale = 1f;
         GameSession.Clear();
         SceneManager.LoadScene("MainMenu");
     }
 
-    // --- Highscore Popups ---
     public void OpenHighscores()
     {
-        if (highscorePanel == null || highscoreText == null)
-            return;
+        StartCoroutine(OpenHSRoutine());
+    }
 
-        string map = GameSession.SelectedBeatmapName;
-        // Asumsi HighscoreManager ada
-        var list = HighscoreManager.LoadTop3(map);
+    private IEnumerator OpenHSRoutine()
+    {
+        if (hoverSFX) sfxAudio.PlayOneShot(hoverSFX);
+        yield return new WaitForSecondsRealtime(0.05f);
+
+        highscorePanel.SetActive(true);
+
+        var list = HighscoreManager.LoadTop3(GameSession.SelectedBeatmapName);
 
         if (list.Count == 0)
         {
@@ -224,18 +184,13 @@ public class LevelCompleteUI : MonoBehaviour
         {
             highscoreText.text = "";
             for (int i = 0; i < list.Count; i++)
-            {
-                // Asumsi HighscoreManager mengembalikan objek dengan properti score dan date
                 highscoreText.text += $"{i + 1}. {list[i].score:N0} — {list[i].date}\n";
-            }
         }
-
-        highscorePanel.SetActive(true);
     }
 
     public void CloseHighscores()
     {
-        if (highscorePanel != null)
-            highscorePanel.SetActive(false);
+        if (hoverSFX) sfxAudio.PlayOneShot(hoverSFX);
+        highscorePanel.SetActive(false);
     }
 }

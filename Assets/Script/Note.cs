@@ -114,7 +114,7 @@ public class Note : MonoBehaviour
         {
             // Jika Note ini tipe yang PINDAH LANE (Phantom), beri warna khusus
             // Contoh: Ungu Neon (Agar terlihat berbahaya/trick)
-            baseNoteColor =  Color.yellow;
+            baseNoteColor =  Color.white;
         }
         else
         {
