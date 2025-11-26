@@ -1273,7 +1273,7 @@ RectTransform:
   m_Father: {fileID: 1345999190}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -4062,7 +4062,7 @@ RectTransform:
   m_GameObject: {fileID: 1048092084}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.80184746, y: 0.6498424, z: 0.6289}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1128962535}
@@ -5688,7 +5688,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1520976677
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8107,10 +8107,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
   panel: {fileID: 1128962534}
+  scoreText: {fileID: 91048943}
   retryButton: {fileID: 745040303}
   mainMenuButton: {fileID: 491981347}
   redOverlay: {fileID: 1048092085}
-  fadeDuration: 0.5
+  fadeDuration: 1
   maxOverlayAlpha: 0.6
   defeatSFX: {fileID: 8300000, guid: 7b0cb7d574b65e84ca9279fdec1e0c9f, type: 3}
   clickSFX: {fileID: 8300000, guid: fd2cb5815674bac4cab21e3bfda08cbd, type: 3}
