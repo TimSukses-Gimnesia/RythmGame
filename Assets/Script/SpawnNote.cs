@@ -32,12 +32,11 @@ public class SpawnNote : MonoBehaviour
     [Range(0f, 1f)] public float ghostHoldChance = 0.4f;
     public float ghostFadeSpeed = 5.0f;
 
-    // 🔥 PENGATURAN DECOY
     [Header("Decoy (Rhythmic Gap Filler)")]
     public bool enableDecoys = true;
-    [Tooltip("Decoy akan hancur X detik sebelum mencapai hit point (misal 0.2s)")]
+    [Tooltip("Seberapa dekat note decoy boleh muncul sebelum hit point (detik)")]
     public float decoyDespawnOffset = 0.3f;
-    [Tooltip("Seberapa padat decoy mengisi celah kosong (0.0 - 1.0)")]
+    [Tooltip("Peluang decoy muncul di celah kosong (0.0 - 1.0)")]
     [Range(0f, 1f)] public float decoyDensity = 0.5f;
 
     [Header("Prefabs")]
@@ -75,8 +74,11 @@ public class SpawnNote : MonoBehaviour
         instance = this;
         audioSource = GetComponent<AudioSource>();
 
-        // 🔗 Hubungkan Mixer
-        if (musicGroup != null) audioSource.outputAudioMixerGroup = musicGroup;
+        // Hubungkan Mixer
+        if (musicGroup != null)
+        {
+            audioSource.outputAudioMixerGroup = musicGroup;
+        }
 
         // Load Session Data
         phantomChance = GameSession.SelectedPhantomChance;
@@ -98,7 +100,7 @@ public class SpawnNote : MonoBehaviour
             audioLeadInSec = chart.audioLeadInSec;
             notes = chart.notes;
 
-            // 2. Kirim Data Kiai (Reff) ke Kiai Manager (Jika ada)
+            // 2. Kirim Data Kiai (Reff) ke Kiai Manager
             var kiaiManager = FindFirstObjectByType<KiaiEffectManager>();
             if (kiaiManager != null)
             {
@@ -117,12 +119,11 @@ public class SpawnNote : MonoBehaviour
         }
     }
 
-    // 🔥 Logic Pengisi Celah Kosong (Decoy Injection)
+    // --- Logic Decoy Injection ---
     void InjectDecoysIntoGaps(List<OsuBeatmapLoader.TimingPoint> timingPoints, List<OsuBeatmapLoader.OsuNote> existingNotes)
     {
         if (timingPoints == null || timingPoints.Count == 0) return;
 
-        // Tandai waktu yang sudah terisi note asli (+- 50ms)
         HashSet<int> occupiedTimes = new HashSet<int>();
         foreach (var n in existingNotes)
         {
@@ -133,34 +134,27 @@ public class SpawnNote : MonoBehaviour
         List<OsuBeatmapLoader.OsuNote> decoys = new List<OsuBeatmapLoader.OsuNote>();
         string[] dirs = { "up", "down", "left", "right" };
 
-        // Loop setiap bagian BPM lagu
         for (int i = 0; i < timingPoints.Count; i++)
         {
             var tp = timingPoints[i];
-            // Abaikan Green Line (inherit) untuk perhitungan beat, cari BPM point berikutnya
             if (tp.beatLengthSec <= 0) continue;
 
             float endTime = existingNotes[existingNotes.Count - 1].timeSec + 2f;
-            // Cari batas akhir BPM section ini
             for (int j = i + 1; j < timingPoints.Count; j++)
             {
                 if (timingPoints[j].beatLengthSec > 0) { endTime = timingPoints[j].timeSec; break; }
             }
 
-            // Iterasi setiap ketukan (Beat)
             for (float t = tp.timeSec; t < endTime; t += tp.beatLengthSec)
             {
                 int checkTimeMs = Mathf.RoundToInt(t * 1000);
-
-                // Jika beat ini kosong (tidak ada note asli)
                 if (!occupiedTimes.Contains(checkTimeMs))
                 {
-                    // Roll Dadu Densitas
                     if (Random.value < decoyDensity)
                     {
                         var decoy = new OsuBeatmapLoader.OsuNote();
                         decoy.timeSec = t;
-                        decoy.type = "decoy"; // TIPE KHUSUS
+                        decoy.type = "decoy";
                         decoy.dir = dirs[Random.Range(0, dirs.Length)];
                         decoy.holdDurationSec = 0;
                         decoys.Add(decoy);
@@ -169,7 +163,6 @@ public class SpawnNote : MonoBehaviour
             }
         }
 
-        // Masukkan Decoy ke list utama dan urutkan ulang
         notes.AddRange(decoys);
         notes.Sort((a, b) => a.timeSec.CompareTo(b.timeSec));
         Debug.Log($"[SpawnNote] Generated {decoys.Count} Decoys.");
@@ -240,7 +233,6 @@ public class SpawnNote : MonoBehaviour
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
 
-        // Loop Spawn (Termasuk Decoy)
         for (int i = notes.Count - 1; i >= 0; i--)
         {
             var note = notes[i];
@@ -264,8 +256,31 @@ public class SpawnNote : MonoBehaviour
         if (ui != null) ui.ShowLevelComplete(HitJudgement.score);
     }
 
-    public static void FreezeGameplay() { if (instance != null) instance.InternalFreezeGameplay(); }
-    private void InternalFreezeGameplay() { if (isGameOver) return; isGameOver = true; isSongReady = false; if (audioSource != null) audioSource.Stop(); Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None); foreach (var note in allNotes) note.enabled = false; }
+    public static void FreezeGameplay()
+    {
+        if (instance != null) instance.InternalFreezeGameplay();
+    }
+
+    // 🔥 FUNGSI PENTING: Mematikan gameplay dan efek saat Game Over
+    private void InternalFreezeGameplay()
+    {
+        if (isGameOver) return;
+        isGameOver = true;
+        isSongReady = false;
+
+        if (audioSource != null) audioSource.Stop();
+
+        // Matikan Note Movement
+        Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None);
+        foreach (var note in allNotes) note.enabled = false;
+
+        // 🔥 MATIKAN EFEK KIAI/FLASH AGAR LAYAR TIDAK PUTIH TERUS
+        var kiaiManager = FindFirstObjectByType<KiaiEffectManager>();
+        if (kiaiManager != null)
+        {
+            kiaiManager.StopKiaiImmediate();
+        }
+    }
 
     void SpawnOne(OsuBeatmapLoader.OsuNote note, float hitTimeSec, float speedForThisNote, float effectiveTravelDuration)
     {
@@ -300,12 +315,16 @@ public class SpawnNote : MonoBehaviour
                 if (note.type != "decoy")
                 {
                     normalNoteCounter++;
-                    if (normalNoteCounter >= 30 && obstaclePrefab != null) { prefabToSpawn = obstaclePrefab; normalNoteCounter = 0; }
+                    if (normalNoteCounter >= 30 && obstaclePrefab != null)
+                    {
+                        prefabToSpawn = obstaclePrefab;
+                        normalNoteCounter = 0;
+                    }
                     else prefabToSpawn = normalNotePrefab;
                 }
                 else
                 {
-                    prefabToSpawn = normalNotePrefab; // Decoy pakai prefab normal
+                    prefabToSpawn = normalNotePrefab; // Decoy
                 }
             }
         }
@@ -319,7 +338,19 @@ public class SpawnNote : MonoBehaviour
 
         GameObject obj = Instantiate(prefabToSpawn, realSpawn.position, spawnRotation);
 
-        if (prefabToSpawn == obstaclePrefab) { var ob = obj.GetComponent<Obstacle>(); if (ob != null) { ob.hitTime = hitTimeSec; ob.spawnPos = realSpawn.position; ob.targetPos = realTarget.position; ob.travelDuration = travelDuration; ob.speed = speedForThisNote; } return; }
+        if (prefabToSpawn == obstaclePrefab)
+        {
+            var ob = obj.GetComponent<Obstacle>();
+            if (ob != null)
+            {
+                ob.hitTime = hitTimeSec;
+                ob.spawnPos = realSpawn.position;
+                ob.targetPos = realTarget.position;
+                ob.travelDuration = travelDuration;
+                ob.speed = speedForThisNote;
+            }
+            return;
+        }
 
         var n = obj.GetComponent<Note>();
         if (n == null) return;
@@ -331,7 +362,7 @@ public class SpawnNote : MonoBehaviour
         n.travelDuration = travelDuration;
         n.speed = speedForThisNote;
         n.dir = note.dir;
-        n.type = note.type; // "decoy", "note", "hold"
+        n.type = note.type;
         n.holdDurationSec = note.holdDurationSec;
 
         // Setup Decoy Param
@@ -343,33 +374,43 @@ public class SpawnNote : MonoBehaviour
         }
         else if (tryGhostHold)
         {
-            n.isGhostHold = true; n.ghostSwitchPoint = 0.5f; n.fadeSpeed = ghostFadeSpeed;
-            n.fakeSpawnPos = fakeSpawnTransform.position; n.fakeTargetPos = fakeTargetTransform.position;
+            n.isGhostHold = true;
+            n.ghostSwitchPoint = 0.5f;
+            n.fadeSpeed = ghostFadeSpeed;
+            n.fakeSpawnPos = fakeSpawnTransform.position;
+            n.fakeTargetPos = fakeTargetTransform.position;
         }
         else if (tryPhantomSlide)
         {
-            n.isPhantom = true; n.switchThreshold = Random.Range(0.4f, 0.6f); n.transitionDuration = phantomSmoothness;
-            n.fakeSpawnPos = fakeSpawnTransform.position; n.fakeTargetPos = fakeTargetTransform.position;
+            n.isPhantom = true;
+            n.switchThreshold = Random.Range(0.4f, 0.6f);
+            n.transitionDuration = phantomSmoothness;
+            n.fakeSpawnPos = fakeSpawnTransform.position;
+            n.fakeTargetPos = fakeTargetTransform.position;
         }
 
         float d = Vector3.Distance(n.spawnPos, n.targetPos);
         n.noteMoveSpeed = d / effectiveTravelDuration;
         n.SetupVisuals();
 
-        // Timing Circle (Kecuali Decoy)
         if (enableTimingCircle && timingCirclePrefab != null && note.type != "hold" && note.type != "decoy")
         {
             GameObject circleGO = Instantiate(timingCirclePrefab, obj.transform.position, Quaternion.identity, effectsParent);
             var tc = circleGO.GetComponent<TimingCircle>();
             if (tc != null)
             {
-                tc.hitTime = hitTimeSec; tc.travelDuration = effectiveTravelDuration; tc.startDsp = songStartDspTime;
-                tc.followTarget = obj.transform; float noteScale = obj.transform.localScale.x;
-                tc.startScale = timingCircleStartScale * noteScale; tc.endScale = timingCircleEndScale * noteScale;
+                tc.hitTime = hitTimeSec;
+                tc.travelDuration = effectiveTravelDuration;
+                tc.startDsp = songStartDspTime;
+                tc.followTarget = obj.transform;
+                float noteScale = obj.transform.localScale.x;
+                tc.startScale = timingCircleStartScale * noteScale;
+                tc.endScale = timingCircleEndScale * noteScale;
             }
         }
     }
 
+    // Helpers
     Quaternion GetRotationForSpawn(Transform t) { if (t == upSpawn) return Quaternion.Euler(0, 0, 180); if (t == downSpawn) return Quaternion.Euler(0, 0, 0); if (t == leftSpawn) return Quaternion.Euler(0, 0, -90); if (t == rightSpawn) return Quaternion.Euler(0, 0, 90); return Quaternion.identity; }
     Transform GetRandomOtherSpawn(string d) { List<Transform> o = new List<Transform>(); if (d != "up") o.Add(upSpawn); if (d != "down") o.Add(downSpawn); if (d != "left") o.Add(leftSpawn); if (d != "right") o.Add(rightSpawn); if (o.Count == 0) return null; return o[Random.Range(0, o.Count)]; }
     Transform GetCorrespondingTarget(Transform t) { if (t == upSpawn) return upTarget; if (t == downSpawn) return downTarget; if (t == leftSpawn) return leftTarget; if (t == rightSpawn) return rightTarget; return null; }

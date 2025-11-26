@@ -11,14 +11,12 @@ public class Note : MonoBehaviour
     public string type; // "note", "hold", "decoy"
     public float holdDurationSec;
 
-    [Header("Visual Settings")] // 🔥 BARU: Setting Warna
+    [Header("Visual Settings")]
     [Tooltip("Warna saat note hold sedang ditekan.")]
-    public Color activeHoldColor = new Color(1f, 0.85f, 0f); // Default: Emas/Gold
+    public Color activeHoldColor = new Color(1f, 0.85f, 0f); // Emas
 
     [Header("Decoy Settings")]
-    [Tooltip("Waktu (detik) sebelum kena garis, note ini akan hancur.")]
     public float despawnOffset = 0.2f;
-    [Tooltip("Prefab Particle System yang muncul saat Decoy hilang/hancur.")]
     public GameObject decoyVanishEffect;
 
     [Header("Movement")]
@@ -55,7 +53,9 @@ public class Note : MonoBehaviour
 
     private float currentGhostAlpha = 1f;
     private Vector3 originalScale;
-    private Color baseNoteColor = Color.white; // Menyimpan warna dasar arah
+
+    // Variable warna dasar
+    private Color baseNoteColor = Color.white;
 
     [Header("Hold Parts")]
     public Transform head;
@@ -108,14 +108,23 @@ public class Note : MonoBehaviour
 
     public void SetupVisuals()
     {
-        // 1. Tentukan Warna Berdasarkan Arah
-        baseNoteColor = Color.white; // Default Up
+        // 🔥 LOGIKA WARNA: Normal = Putih, Phantom = Beda 🔥
 
-        if (dir == "right") baseNoteColor = Color.yellow;
-        else if (dir == "left") baseNoteColor = new Color(0.88f, 0.62f, 1f); // Pink/Magenta
-        else if (dir == "down") baseNoteColor = Color.cyan; // Biru Muda/Cyan
+        if (isPhantom)
+        {
+            // Jika Note ini tipe yang PINDAH LANE (Phantom), beri warna khusus
+            // Contoh: Ungu Neon (Agar terlihat berbahaya/trick)
+            baseNoteColor =  Color.yellow;
+        }
+        else
+        {
+            // Jika Note biasa (Lurus) dari arah manapun (Up/Down/Left/Right), tetap Putih
+            baseNoteColor = Color.white;
+        }
 
-        // 2. Setup Visual untuk HOLD Note
+        // --- Terapkan Warna ke Visual ---
+
+        // 1. Setup Visual untuk HOLD Note
         if (type == "hold")
         {
             if (mySpriteRenderer != null) mySpriteRenderer.enabled = false;
@@ -154,13 +163,14 @@ public class Note : MonoBehaviour
             return;
         }
 
-        // 3. Setup Visual untuk NORMAL / DECOY Note
+        // 2. Setup Visual untuk NORMAL / DECOY Note
         if (mySpriteRenderer != null)
         {
             mySpriteRenderer.enabled = true;
             mySpriteRenderer.size = new Vector2(1f, 1f);
 
-            // Jika Decoy, biarkan DecoyColorChanger yang atur
+            // Jika Decoy, biarkan script DecoyColorChanger yang mengatur warnanya
+            // Jika bukan Decoy, terapkan logika warna kita (Putih atau Ungu Phantom)
             if (type != "decoy")
             {
                 mySpriteRenderer.color = baseNoteColor;
@@ -176,7 +186,6 @@ public class Note : MonoBehaviour
     {
         if (type != "hold") return;
 
-        // --- 1. Logika Ukuran Body ---
         double holdStartTime = hitTime;
         double holdEndTime = hitTime + holdDurationSec;
         float progress = Mathf.Clamp01((float)((songTime - holdStartTime) / (holdEndTime - holdStartTime)));
@@ -191,19 +200,18 @@ public class Note : MonoBehaviour
         body.localPosition = new Vector3(0, -headHeight, 0);
         tail.localPosition = new Vector3(0, -headHeight - currentBodyLength, 0);
 
-        // --- 2. Logika Warna Responsif (Modifikasi) ---
         if (allSpriteRenderers != null)
         {
             Color finalColor;
 
             if (isHolding)
             {
-                // 🔥 Saat ditekan: Gunakan warna Emas (activeHoldColor)
+                // Saat ditekan: Warna Emas
                 finalColor = activeHoldColor;
             }
             else
             {
-                // Saat lepas: Kembali ke Warna Arah
+                // Saat lepas: Kembali ke Warna Dasar (Putih atau Ungu Phantom)
                 finalColor = baseNoteColor;
             }
 
@@ -222,7 +230,7 @@ public class Note : MonoBehaviour
 
         double songTime = AudioSettings.dspTime - songStartDspTime;
 
-        // 🔥 LOGIKA DECOY
+        // Logic Hancur Decoy
         if (type == "decoy")
         {
             if (songTime > hitTime - despawnOffset)
@@ -242,7 +250,7 @@ public class Note : MonoBehaviour
         double t = (songTime - spawnTime) / effectiveDuration;
         float progress = Mathf.Clamp01((float)t);
 
-        // --- Logic Pergerakan Normal / Phantom / Ghost ---
+        // --- Logic Pergerakan ---
         if (isGhostHold)
         {
             float distToCenter = Mathf.Abs(progress - ghostSwitchPoint);
@@ -307,6 +315,7 @@ public class Note : MonoBehaviour
         }
         else
         {
+            // Movement Normal
             currentGhostAlpha = 1f;
             transform.localScale = originalScale;
             transform.position = Vector3.Lerp(spawnPos, targetPos, progress);

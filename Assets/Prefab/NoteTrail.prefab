@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -5284028751936394003}
   - component: {fileID: 8931012220323305809}
   - component: {fileID: 5888496239979138454}
+  - component: {fileID: -1526634328749856458}
   m_Layer: 0
   m_Name: NoteTrail
   m_TagString: Untagged
@@ -112,37 +113,15 @@ MonoBehaviour:
   dir: 
   type: 
   holdDurationSec: 0
+  activeHoldColor: {r: 1, g: 0.85, b: 0, a: 1}
+  despawnOffset: 0.2
+  decoyVanishEffect: {fileID: 0}
   spawnPos: {x: 0, y: 0, z: 0}
   targetPos: {x: 0, y: 0, z: 0}
   travelDuration: 0
   speed: 1.2
   noteMoveSpeed: 0
-  slideCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  transitionColor: {r: 1, g: 1, b: 1, a: 0.33333334}
-  shakeIntensity: 0.02
+  initialJudgement: Perfect
   isPhantom: 0
   fakeSpawnPos: {x: 0, y: 0, z: 0}
   fakeTargetPos: {x: 0, y: 0, z: 0}
@@ -342,3 +321,21 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &-1526634328749856458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8946434144321846813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8c89a55399c93144a8e1f325f316010, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NoteHitEffect
+  animDuration: 0.5
+  perfectColor: {r: 1, g: 0.8862745, b: 0, a: 1}
+  goodColor: {r: 0, g: 1, b: 1, a: 1}
+  perfectEndScale: 1.6
+  goodEndScale: 1.2
+  hitParticlePrefab: {fileID: 0}

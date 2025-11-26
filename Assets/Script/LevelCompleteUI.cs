@@ -123,7 +123,7 @@ public class LevelCompleteUI : MonoBehaviour
         HighscoreManager.AddScore(GameSession.SelectedBeatmapName, finalScore);
     }
 
-    // 🔥 FUNGSI TELAH DIMODIFIKASI UNTUK MENGGUNAKAN ColorUtility LANGSUNG
+  
     string GetMotivationalFeedback(float acc)
     {
         // Konversi warna ke string Hex RGB dengan ColorUtility

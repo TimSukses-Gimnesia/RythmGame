@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8931012220323305809}
   - component: {fileID: -5060978939775545692}
   - component: {fileID: -2757306200185706611}
+  - component: {fileID: 8207237085838307204}
   m_Layer: 0
   m_Name: NoteSpawn
   m_TagString: Untagged
@@ -233,3 +234,21 @@ MonoBehaviour:
   glitchColor: {r: 0, g: 0, b: 0, a: 0.6}
   shakeAmount: 0.05
   flickerSpeed: 0.1
+--- !u!114 &8207237085838307204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8946434144321846813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8c89a55399c93144a8e1f325f316010, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NoteHitEffect
+  animDuration: 0.5
+  perfectColor: {r: 1, g: 0.88761747, b: 0, a: 1}
+  goodColor: {r: 0, g: 1, b: 1, a: 1}
+  perfectEndScale: 1.6
+  goodEndScale: 1.2
+  hitParticlePrefab: {fileID: 0}
