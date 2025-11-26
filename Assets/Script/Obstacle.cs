@@ -3,7 +3,7 @@ using UnityEngine;
 public class Obstacle : MonoBehaviour
 {
     [Header("Movement Timing")]
-    public float hitTime;             // waktu saat obstacle mencapai target (beat)
+    public float hitTime;           // waktu saat obstacle mencapai target (beat)
     public Vector3 spawnPos;
     public Vector3 targetPos;
     public float travelDuration = 2f;
@@ -17,6 +17,25 @@ public class Obstacle : MonoBehaviour
     [Header("Damage Settings")]
     public float damage = 50f;
 
+    // --- VISUAL ENHANCEMENT & ROCKET VISUALS ---
+    [Header("Visual Enhancement (Sharp & Vibrant)")]
+    [Range(1.0f, 5.0f)]
+    public float colorBrightnessMultiplier = 2.5f;
+    [Range(0.0f, 1.0f)]
+    public float saturationBoost = 0.5f;
+
+    [Header("Rocket Visuals")]
+    [Tooltip("Particle System yang berperan sebagai pendorong roket. HARUS dihubungkan di Inspector.")]
+    public ParticleSystem thrusterParticles;
+    [Tooltip("Sesuaikan offset rotasi roket (mis. -90 jika model menghadap ke atas).")]
+    public float rotationOffset = -90f;
+
+    private const float SelfIlluminationFactor = 4.0f;
+    private Renderer obstacleRenderer;
+    private Material obstacleMaterial;
+    private Color originalColor;
+    // -------------------------------------------
+
     private double songStartDspTime;
     private bool hasReachedTarget = false;
     private Vector3 moveDir;
@@ -28,9 +47,27 @@ public class Obstacle : MonoBehaviour
         var spawner = FindFirstObjectByType<SpawnNote>();
         songStartDspTime = spawner != null ? spawner.songStartDspTime : AudioSettings.dspTime;
 
+        // --- VISUAL INITIATION (Vibrancy & Self-Illumination) ---
+        obstacleRenderer = GetComponent<Renderer>();
+        if (obstacleRenderer != null)
+        {
+            obstacleMaterial = obstacleRenderer.material;
+
+            if (obstacleMaterial.HasProperty("_Color"))
+            {
+                originalColor = obstacleMaterial.color;
+            }
+
+            ApplyVibrancyAndSelfIllumination();
+        }
+        // ---------------------------------------------------------
+
         transform.position = spawnPos;
         moveDir = (targetPos - spawnPos).normalized;
         mainCam = Camera.main;
+
+        // Atur orientasi agar objek menghadap ke arah pergerakan (seperti roket)
+        SetupRocketOrientation();
     }
 
     void Update()
@@ -48,6 +85,64 @@ public class Obstacle : MonoBehaviour
 
         CheckOutOfViewAndDestroy();
     }
+
+    // Fungsi untuk membuat warna lebih tajam dan cerah (Vibrancy)
+    private void ApplyVibrancyAndSelfIllumination()
+    {
+        if (obstacleMaterial == null) return;
+
+        Color baseColor = originalColor;
+
+        float h, s, v;
+        Color.RGBToHSV(baseColor, out h, out s, out v);
+
+        // Tingkatkan Saturasi (membuat warna lebih murni/tajam)
+        s = Mathf.Clamp01(s + saturationBoost);
+
+        // Tingkatkan Kecerahan (membuat warna terlihat lebih mencolok)
+        v *= colorBrightnessMultiplier;
+
+        Color vibrantColor = Color.HSVToRGB(h, s, v);
+
+        if (obstacleMaterial.HasProperty("_Color"))
+        {
+            obstacleMaterial.color = vibrantColor;
+        }
+
+        // Aplikasikan Self-Illumination (PENTING tanpa Bloom)
+        if (obstacleMaterial.HasProperty("_EmissionColor"))
+        {
+            Color finalIlluminationColor = vibrantColor * SelfIlluminationFactor;
+
+            obstacleMaterial.EnableKeyword("_EMISSION");
+            obstacleMaterial.SetColor("_EmissionColor", finalIlluminationColor);
+        }
+        else
+        {
+            Debug.LogWarning("Material tidak memiliki properti _EmissionColor. Tidak dapat menerapkan Self-Illumination.");
+        }
+    }
+
+    // Fungsi untuk mengatur rotasi objek agar menghadap ke arah pergerakan
+    private void SetupRocketOrientation()
+    {
+        // Hitung sudut rotasi berdasarkan arah pergerakan (moveDir)
+        float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
+
+        // Terapkan rotasi ke objek utama dengan offset (rotationOffset)
+        transform.rotation = Quaternion.Euler(0, 0, angle + rotationOffset);
+
+        // Partikel pendorong harus otomatis mengikuti rotasi parent-nya (roket).
+        if (thrusterParticles != null)
+        {
+            // Pastikan partikel menyala (jika tidak otomatis play on awake)
+            if (!thrusterParticles.isPlaying)
+            {
+                thrusterParticles.Play();
+            }
+        }
+    }
+
 
     private void MoveTowardTargetBeatSynced()
     {
@@ -68,7 +163,6 @@ public class Obstacle : MonoBehaviour
 
     private void MoveConstantlyOffscreen()
     {
-        // Bergerak stabil tanpa Lerp — terus menerus dengan kecepatan konstan
         transform.position += moveDir * (speed * postTargetSpeedMultiplier) * Time.deltaTime;
     }
 
@@ -79,12 +173,21 @@ public class Obstacle : MonoBehaviour
 
         Vector3 viewport = mainCam.WorldToViewportPoint(transform.position);
 
-        // Jika obstacle benar-benar keluar dari layar (lebih dari margin)
         if (viewport.x < -viewportMargin || viewport.x > 1 + viewportMargin ||
             viewport.y < -viewportMargin || viewport.y > 1 + viewportMargin)
         {
             isOutOfView = true;
-            Destroy(gameObject, destroyDelayAfterOut);
+            // Hentikan partikel sebelum destroy agar tidak terjadi efek partikel "melompat"
+            if (thrusterParticles != null)
+            {
+                thrusterParticles.Stop();
+                // Tunggu sebentar agar partikel yang tersisa selesai
+                Destroy(gameObject, thrusterParticles.main.startLifetime.constantMax);
+            }
+            else
+            {
+                Destroy(gameObject, destroyDelayAfterOut);
+            }
         }
     }
 
@@ -93,10 +196,21 @@ public class Obstacle : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             Debug.Log("💥 Player hit obstacle!");
-            HitJudgement.health -= damage;
+           
+             HitJudgement.health -= damage;
             HitJudgement.combo = 0;
             DamageEffect.Instance.TriggerFlash();
-            Destroy(gameObject);
+
+            // Hentikan partikel sebelum destroy
+            if (thrusterParticles != null)
+            {
+                thrusterParticles.Stop();
+                Destroy(gameObject, thrusterParticles.main.startLifetime.constantMax);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

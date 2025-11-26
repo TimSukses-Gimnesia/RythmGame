@@ -41,33 +41,27 @@ public class LevelCompleteUI : MonoBehaviour
     public GameObject highscorePanel;
     public TMP_Text highscoreText;
 
-    [Header("Sound Effects")]
-    public AudioClip victorySFX;
-    public AudioClip confirmSFX;
-    public AudioClip hoverSFX;
+    [Header("Audio")]
+    public AudioSource sfxSource;
+    public AudioClip sfxClick;
+    public AudioClip sfxVictory;
 
-    private AudioSource sfxAudio;
     private bool isVisible = false;
 
     void Start()
     {
-        sfxAudio = gameObject.AddComponent<AudioSource>();
-
         if (panel != null)
             panel.SetActive(false);
 
-        retryButton?.onClick.AddListener(OnRetry);
-        mainMenuButton?.onClick.AddListener(OnMainMenu);
-        highscoreButton?.onClick.AddListener(OpenHighscores);
-        highscoreCloseButton?.onClick.AddListener(CloseHighscores);
+        retryButton.onClick.AddListener(OnRetryButton);
+        mainMenuButton.onClick.AddListener(OnMainMenuButton);
+        highscoreButton.onClick.AddListener(OnHighscoreButton);
+        highscoreCloseButton.onClick.AddListener(OnHighscoreCloseButton);
 
         if (highscorePanel != null)
             highscorePanel.SetActive(false);
     }
 
-    // ============================================================
-    // SHOW RESULT PANEL
-    // ============================================================
     public void ShowLevelComplete(long finalScore)
     {
         if (isVisible) return;
@@ -75,9 +69,9 @@ public class LevelCompleteUI : MonoBehaviour
 
         panel.SetActive(true);
 
-        // Victory SFX
-        if (victorySFX)
-            sfxAudio.PlayOneShot(victorySFX);
+        // Play victory sound
+        if (sfxSource && sfxVictory)
+            sfxSource.PlayOneShot(sfxVictory);
 
         titleText.text = "SONG COMPLETE!";
         scoreText.text = finalScore.ToString("N0");
@@ -97,81 +91,79 @@ public class LevelCompleteUI : MonoBehaviour
         HighscoreManager.AddScore(GameSession.SelectedBeatmapName, finalScore);
     }
 
-    // ============================================================
-    // RANK SPRITE SELECTOR
-    // ============================================================
     void SetRankSprite(float acc)
     {
         if (rankSpriteHolder == null) return;
 
-        if (acc >= 95f)
-            rankSpriteHolder.sprite = rankSprite_S;
-        else if (acc >= 90f)
-            rankSpriteHolder.sprite = rankSprite_A;
-        else if (acc >= 80f)
-            rankSpriteHolder.sprite = rankSprite_B;
-        else if (acc >= 70f)
-            rankSpriteHolder.sprite = rankSprite_C;
-        else
-            rankSpriteHolder.sprite = rankSprite_D;
+        if (acc >= 95f) rankSpriteHolder.sprite = rankSprite_S;
+        else if (acc >= 90f) rankSpriteHolder.sprite = rankSprite_A;
+        else if (acc >= 80f) rankSpriteHolder.sprite = rankSprite_B;
+        else if (acc >= 70f) rankSpriteHolder.sprite = rankSprite_C;
+        else rankSpriteHolder.sprite = rankSprite_D;
 
-        rankSpriteHolder.preserveAspect = true; // supaya ukuran sprite sesuai texture
+        rankSpriteHolder.preserveAspect = true;
     }
 
-    // ============================================================
-    // MOTIVATIONAL TEXT
-    // ============================================================
     string GetMotivationalFeedback(float acc)
     {
-        if (acc >= 95f) return "S Rank! Absolute perfection!";
+        if (acc >= 95f) return "S Rank Achieved! Perfect synchronization!";
         if (acc >= 90f) return "Amazing job! You're in the A tier!";
         if (acc >= 80f) return "Great work! Solid B performance!";
         if (acc >= 70f) return "Nice! You're getting better!";
         return "Keep practicing — you can do this!";
     }
 
-    // ============================================================
-    // BUTTONS WITH DELAY (prevent SFX cutting off)
-    // ============================================================
-    public void OnRetry()
+    // ===========================================================
+    // BUTTON IMPLEMENTATION (Click + Action inside same function)
+    // ===========================================================
+
+    void PlayClick()
     {
-        StartCoroutine(ReloadRoutine());
+        if (sfxSource && sfxClick)
+            sfxSource.PlayOneShot(sfxClick);
     }
 
-    private IEnumerator ReloadRoutine()
+    public void OnRetryButton()
     {
-        if (confirmSFX) sfxAudio.PlayOneShot(confirmSFX);
-        yield return new WaitForSecondsRealtime(0.15f);
+        PlayClick();
+        StartCoroutine(LoadGameplayDelayed());
+    }
 
-        Time.timeScale = 1f;
+    IEnumerator LoadGameplayDelayed()
+    {
+        yield return new WaitForSecondsRealtime(0.22f);
         SceneManager.LoadScene("Gameplay");
     }
 
-    public void OnMainMenu()
+    public void OnMainMenuButton()
     {
-        StartCoroutine(MainMenuRoutine());
+        PlayClick();
+        StartCoroutine(LoadMainMenuDelayed());
     }
 
-    private IEnumerator MainMenuRoutine()
+    IEnumerator LoadMainMenuDelayed()
     {
-        if (confirmSFX) sfxAudio.PlayOneShot(confirmSFX);
-        yield return new WaitForSecondsRealtime(0.15f);
-
-        Time.timeScale = 1f;
+        yield return new WaitForSecondsRealtime(0.22f);
         GameSession.Clear();
         SceneManager.LoadScene("MainMenu");
     }
 
-    public void OpenHighscores()
+    public void OnHighscoreButton()
     {
-        StartCoroutine(OpenHSRoutine());
+        PlayClick();
+        OpenHighscores();
     }
 
-    private IEnumerator OpenHSRoutine()
+    public void OnHighscoreCloseButton()
     {
-        if (hoverSFX) sfxAudio.PlayOneShot(hoverSFX);
-        yield return new WaitForSecondsRealtime(0.05f);
+        PlayClick();
+        CloseHighscores();
+    }
 
+    // ===========================================================
+
+    void OpenHighscores()
+    {
         highscorePanel.SetActive(true);
 
         var list = HighscoreManager.LoadTop3(GameSession.SelectedBeatmapName);
@@ -188,9 +180,8 @@ public class LevelCompleteUI : MonoBehaviour
         }
     }
 
-    public void CloseHighscores()
+    void CloseHighscores()
     {
-        if (hoverSFX) sfxAudio.PlayOneShot(hoverSFX);
         highscorePanel.SetActive(false);
     }
 }

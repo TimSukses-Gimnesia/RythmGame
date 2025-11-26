@@ -4,8 +4,9 @@ using System.IO;
 using System.Collections;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Collections.Generic;
 
-[RequireComponent(typeof(AudioSource))] // Pastikan ada AudioSource
+[RequireComponent(typeof(AudioSource))]
 public class BeatmapSelectManager : MonoBehaviour
 {
     [Header("Difficulty Visuals")]
@@ -32,7 +33,11 @@ public class BeatmapSelectManager : MonoBehaviour
     public Button mediumButton;
     public Button hardButton;
 
-    [Header("SFX")] // 🔥 BARU: Referensi Suara
+    // 🔥 BARU: UI TEXT UNTUK HIGHSCORE
+    [Header("Highscore UI")]
+    public TextMeshProUGUI highscoreText; // Hubungkan ini di Inspector
+
+    [Header("SFX")]
     public AudioClip playButtonSound;
     private AudioSource sfxSource;
 
@@ -49,7 +54,6 @@ public class BeatmapSelectManager : MonoBehaviour
 
     void Start()
     {
-        // 🔥 Inisialisasi Audio Source
         sfxSource = GetComponent<AudioSource>();
 
 #if UNITY_EDITOR
@@ -89,29 +93,24 @@ public class BeatmapSelectManager : MonoBehaviour
     {
         DifficultyButtonVisual newVisual = GetVisual(newButton);
 
-        // Kembalikan button sebelumnya
         if (selectedVisual != null)
         {
             Image oldImg = selectedVisual.button.GetComponent<Image>();
             oldImg.sprite = selectedVisual.defaultSprite;
 
-            // warna kembali normal
             var oldColor = selectedVisual.button.colors;
             oldColor.normalColor = Color.white;
             selectedVisual.button.colors = oldColor;
         }
 
-        // Set button baru
         selectedVisual = newVisual;
 
         Image img = newVisual.button.GetComponent<Image>();
         SpriteState state = newVisual.button.spriteState;
 
-        // gunakan pressedSprite sebagai current sprite
         if (state.pressedSprite != null)
             img.sprite = state.pressedSprite;
 
-        // warna normal mengikuti pressedColor
         var colors = newVisual.button.colors;
         colors.normalColor = colors.pressedColor;
         newVisual.button.colors = colors;
@@ -130,6 +129,7 @@ public class BeatmapSelectManager : MonoBehaviour
         index = (i + beatmapFolders.Length) % beatmapFolders.Length;
 
         string folder = beatmapFolders[index];
+        string beatmapName = Path.GetFileName(folder);
 
         string osuFile = GetOsuFile(folder);
         if (osuFile == null)
@@ -148,7 +148,36 @@ public class BeatmapSelectManager : MonoBehaviour
 
         string nextFolder = beatmapFolders[(index + 1) % beatmapFolders.Length];
         LoadImageToUI(previewManager.FindCoverImage(nextFolder), nextCover);
+
+        // 🔥 BARU: Tampilkan High Score
+        DisplayHighscores(beatmapName);
     }
+
+    // 🔥 FUNGSI BARU: Hanya Menampilkan SKOR TERTINGGI PERTAMA secara MENDATAR
+    private void DisplayHighscores(string beatmapName)
+    {
+        if (highscoreText == null) return;
+
+        List<HighscoreManager.ScoreEntry> topScores = HighscoreManager.LoadTop3(beatmapName);
+
+        if (topScores == null || topScores.Count == 0)
+        {
+            // Tampilan jika tidak ada skor
+            highscoreText.text = "High Score: ";
+        }
+        else
+        {
+            // Ambil entri skor tertinggi (indeks 0)
+            HighscoreManager.ScoreEntry topScoreEntry = topScores[0];
+
+            // Format tampilan skor tertinggi secara mendatar:
+            // "🏆 High Score: [SCORE] ([DATE])"
+            string display = $"High Score: <color=yellow>{topScoreEntry.score:N0}</color> ";
+
+            highscoreText.text = display;
+        }
+    }
+
 
     Sprite LoadSprite(string path)
     {
@@ -189,7 +218,6 @@ public class BeatmapSelectManager : MonoBehaviour
         int nextIndex = (index + 1) % len;
         int cloneIndex = (index + 2) % len;
 
-        string nextFolder = beatmapFolders[nextIndex];
         string cloneFolder = beatmapFolders[cloneIndex];
 
         Sprite cloneSprite = null;
@@ -219,7 +247,6 @@ public class BeatmapSelectManager : MonoBehaviour
         int prevIndex = (index - 1 + len) % len;
         int cloneIndex = (index - 2 + len) % len;
 
-        string prevFolder = beatmapFolders[prevIndex];
         string cloneFolder = beatmapFolders[cloneIndex];
 
         Sprite cloneSprite = null;
@@ -281,26 +308,23 @@ public class BeatmapSelectManager : MonoBehaviour
 
     IEnumerator PlayGameSequence()
     {
-        // 1. Mainkan Suara
         if (sfxSource != null && playButtonSound != null)
         {
             sfxSource.PlayOneShot(playButtonSound);
-
-            // 2. Tunggu sebentar agar suara terdengar (misal 0.5 detik atau sepanjang durasi clip)
-            // Jangan terlalu lama biar pemain tidak bosan menunggu
             yield return new WaitForSeconds(0.4f);
         }
 
-        // 3. Logika Simpan Data (Pindahkan ke sini)
         if (beatmapFolders == null || beatmapFolders.Length == 0) yield break;
 
         string folder = beatmapFolders[index];
         string osuFile = GetOsuFile(folder);
         if (string.IsNullOrEmpty(osuFile)) yield break;
 
+        string beatmapName = Path.GetFileName(folder);
+
         GameSession.SelectedOsuFile = osuFile;
         GameSession.SelectedBeatmapPath = folder;
-        GameSession.SelectedBeatmapName = Path.GetFileName(folder);
+        GameSession.SelectedBeatmapName = beatmapName;
         GameSession.SelectedPhantomChance = SelectedPhantomChance;
         GameSession.SelectedDifficulty = (GameSession.BeatmapDifficulty)SelectedDifficulty;
 
@@ -311,7 +335,6 @@ public class BeatmapSelectManager : MonoBehaviour
 
         Debug.Log($"[PlayGame] Playing: {osuFile}");
 
-        // 4. Pindah Scene
         var loader = FindFirstObjectByType<LoadingManager>();
         if (loader != null)
         {
