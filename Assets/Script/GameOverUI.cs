@@ -8,6 +8,7 @@ public class GameOverUI : MonoBehaviour
 {
     [Header("UI References")]
     public GameObject panel;
+    public TMP_Text scoreText; // 🔥 DITAMBAHKAN: Untuk menampilkan skor
     public Button retryButton;
     public Button mainMenuButton;
 
@@ -27,7 +28,7 @@ public class GameOverUI : MonoBehaviour
 
     private AudioSource sfxSource;
     private bool isVisible = false;
-    private Coroutine fadeCoroutine; // 🔥 Untuk mengontrol coroutine overlay
+    private Coroutine fadeCoroutine; // Untuk mengontrol coroutine overlay
 
     void Awake()
     {
@@ -48,7 +49,7 @@ public class GameOverUI : MonoBehaviour
         sfxSource.playOnAwake = false;
         sfxSource.loop = false;
         sfxSource.volume = 1f;
-        sfxSource.ignoreListenerPause = true; // 🔥 Diperlukan agar suara bermain saat Time.timeScale = 0
+        sfxSource.ignoreListenerPause = true; // Diperlukan agar suara bermain saat Time.timeScale = 0
     }
 
     void Start()
@@ -56,7 +57,7 @@ public class GameOverUI : MonoBehaviour
         if (panel != null)
             panel.SetActive(false);
 
-        // 🔥 BARU: Inisialisasi dan sembunyikan overlay di awal
+        // Inisialisasi dan sembunyikan overlay di awal
         if (redOverlay != null)
         {
             redOverlay.gameObject.SetActive(false);
@@ -65,6 +66,7 @@ public class GameOverUI : MonoBehaviour
             redOverlay.color = originalColor;
         }
 
+        // Hubungkan Tombol
         retryButton?.onClick.AddListener(() =>
         {
             PlayClick();
@@ -79,16 +81,31 @@ public class GameOverUI : MonoBehaviour
     }
 
     // ============================================================
-    // SHOW GAME OVER
+    // SHOW GAME OVER & SAVE SCORE
     // ============================================================
-    public void ShowGameOver(long _)
+    public void ShowGameOver(long finalScore)
     {
         if (isVisible) return;
         isVisible = true;
 
         panel?.SetActive(true);
 
-        // 🔥 BARU: Mulai efek overlay sebelum game di-pause
+        // 1. Tampilkan Skor di UI
+        if (scoreText != null)
+        {
+            scoreText.text = $"Final Score: {finalScore:N0}";
+        }
+
+        // 2. SIMPAN SKOR TERTINGGI
+        // Asumsi: GameSession.SelectedBeatmapName menyimpan kunci unik beatmap
+        if (!string.IsNullOrEmpty(GameSession.SelectedBeatmapName))
+        {
+            Debug.Log($"Saving failed score: {finalScore} for map {GameSession.SelectedBeatmapName}");
+            // Panggil fungsi penyimpanan highscore
+            HighscoreManager.AddScore(GameSession.SelectedBeatmapName, finalScore);
+        }
+
+        // --- Efek Visual dan Audio ---
         if (redOverlay != null)
         {
             redOverlay.gameObject.SetActive(true);
@@ -98,18 +115,19 @@ public class GameOverUI : MonoBehaviour
 
         PlayDefeat();
 
-        // 🔥 Tunda pause game sedikit agar SFX Defeat terdengar
+        // Tunda pause game sedikit agar SFX Defeat terdengar
         StartCoroutine(PauseGameAfterDelay(0.1f));
     }
 
-    // 🔥 FUNGSI BARU: Coroutine untuk Fade Overlay
+    // ============================================================
+    // OVERLAY FADE EFFECT
+    // ============================================================
     IEnumerator FadeRedOverlay()
     {
         // Fade In
         float timer = 0f;
         while (timer < fadeDuration)
         {
-            // 🔥 Gunakan unscaledDeltaTime karena Time.timeScale akan 0
             timer += Time.unscaledDeltaTime;
             Color color = redOverlay.color;
             color.a = Mathf.Lerp(0f, maxOverlayAlpha, timer / fadeDuration);
@@ -117,7 +135,6 @@ public class GameOverUI : MonoBehaviour
             yield return null;
         }
 
-        // Pastikan alpha diatur tepat di maxOverlayAlpha
         Color finalInColor = redOverlay.color;
         finalInColor.a = maxOverlayAlpha;
         redOverlay.color = finalInColor;
@@ -136,14 +153,13 @@ public class GameOverUI : MonoBehaviour
             yield return null;
         }
 
-        // Pastikan alpha diatur tepat di 0
         Color finalOutColor = redOverlay.color;
         finalOutColor.a = 0f;
         redOverlay.color = finalOutColor;
-        redOverlay.gameObject.SetActive(false); // Sembunyikan setelah fade out
+        redOverlay.gameObject.SetActive(false);
     }
 
-    // 🔥 FUNGSI BARU: Coroutine untuk menunda pause game
+    // Coroutine untuk menunda pause game
     IEnumerator PauseGameAfterDelay(float delay)
     {
         yield return new WaitForSecondsRealtime(delay);
@@ -171,7 +187,7 @@ public class GameOverUI : MonoBehaviour
     // ============================================================
     IEnumerator DelayedRetry()
     {
-        // 🔥 Hentikan overlay saat aksi dimulai
+        // Hentikan overlay saat aksi dimulai
         if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
         if (redOverlay != null) redOverlay.gameObject.SetActive(false);
 
@@ -183,7 +199,7 @@ public class GameOverUI : MonoBehaviour
 
     IEnumerator DelayedMainMenu()
     {
-        // 🔥 Hentikan overlay saat aksi dimulai
+        // Hentikan overlay saat aksi dimulai
         if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
         if (redOverlay != null) redOverlay.gameObject.SetActive(false);
 
