@@ -43,11 +43,15 @@ public class HitJudgement : MonoBehaviour
     public string effectSortingLayer = "Default";
     public int effectSortingOrder = 20;
     public bool enableHitEffect = true;
+    public GameObject chromaticBurstPrefab;
 
     // Internal Variables
     private List<Note> notesInTrigger = new List<Note>();
     private SpawnNote spawner;
     private Note currentlyHoldingNote = null;
+
+    private PlayerPulse playerPulse;
+    private Transform playerTransform;
 
     void Start()
     {
@@ -62,6 +66,9 @@ public class HitJudgement : MonoBehaviour
 
         // Ambil Max Health dari Player
         health = FindFirstObjectByType<PlayerMovement>()?.maxHealth ?? 100f;
+
+        playerPulse = FindFirstObjectByType<PlayerPulse>();
+        playerTransform = FindFirstObjectByType<PlayerMovement>()?.transform;
     }
 
     // hitung acurracy
@@ -93,14 +100,34 @@ public class HitJudgement : MonoBehaviour
             ApplyHealth(perfectHealthGain);
             spriteToShow = perfectSprite;
             countPerfect++;
+
             CameraShake.Shake(0.08f, 0.07f);
+            if (playerPulse != null) playerPulse.Pulse(0.60f);
+
+            if (chromaticBurstPrefab != null && playerTransform != null)
+            {
+                GameObject burst = Instantiate(
+                    chromaticBurstPrefab,
+                    playerTransform.position,
+                    Quaternion.identity,
+                    effectsParent
+                );
+
+                Sprite currentSprite = playerTransform.GetComponent<SpriteRenderer>()?.sprite;
+
+                ChromaticBurst cb = burst.GetComponent<ChromaticBurst>();
+                if (cb != null && currentSprite != null)
+                    cb.Initialize(currentSprite);
+            }
         }
         else if (judgement == "Good")
         {
             ApplyHealth(goodHealthGain);
             spriteToShow = goodSprite;
             countGood++;
+
             CameraShake.Shake(0.05f, 0.04f);
+            if (playerPulse != null) playerPulse.Pulse(0.30f);
         }
 
         // Simpan judgement awal untuk Hold Note (biar adil saat dilepas nanti)
@@ -132,13 +159,34 @@ public class HitJudgement : MonoBehaviour
                 spriteToShow = goodSprite;
                 countGood++;
                 PlayHitSFX("Good");
+
                 CameraShake.Shake(0.05f, 0.04f);
+                if (playerPulse != null) playerPulse.Pulse(0.30f);
             }
             else
             {
                 spriteToShow = perfectSprite;
                 countPerfect++;
+                // PlayHitSFX("Perfect");
+
                 CameraShake.Shake(0.08f, 0.07f);
+                if (playerPulse != null) playerPulse.Pulse(0.60f);
+
+                if (chromaticBurstPrefab != null && playerTransform != null)
+                {
+                    GameObject burst = Instantiate(
+                        chromaticBurstPrefab,
+                        playerTransform.position,
+                        Quaternion.identity,
+                        effectsParent
+                    );
+
+                    Sprite currentSprite = playerTransform.GetComponent<SpriteRenderer>()?.sprite;
+
+                    ChromaticBurst cb = burst.GetComponent<ChromaticBurst>();
+                    if (cb != null && currentSprite != null)
+                        cb.Initialize(currentSprite);
+                }
             }
         }
         else

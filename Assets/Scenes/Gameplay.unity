@@ -2437,6 +2437,7 @@ MonoBehaviour:
   effectSortingLayer: Default
   effectSortingOrder: 20
   enableHitEffect: 1
+  chromaticBurstPrefab: {fileID: 8854015220319828235, guid: 5a342f4a1b51b3643b1f8429dc5e785c, type: 3}
 --- !u!58 &722416202
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -3155,6 +3156,7 @@ MonoBehaviour:
   effectSortingLayer: Default
   effectSortingOrder: 20
   enableHitEffect: 1
+  chromaticBurstPrefab: {fileID: 8854015220319828235, guid: 5a342f4a1b51b3643b1f8429dc5e785c, type: 3}
 --- !u!58 &855145286
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -5683,6 +5685,7 @@ GameObject:
   - component: {fileID: 1614279261}
   - component: {fileID: 1614279260}
   - component: {fileID: 1614279263}
+  - component: {fileID: 1614279264}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -5856,6 +5859,18 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!114 &1614279264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1614279257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1b3bcb7332a412428d5abaaa5a3f765, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerPulse
 --- !u!1 &1618289139
 GameObject:
   m_ObjectHideFlags: 0
@@ -6564,6 +6579,7 @@ MonoBehaviour:
   effectSortingLayer: Default
   effectSortingOrder: 20
   enableHitEffect: 1
+  chromaticBurstPrefab: {fileID: 8854015220319828235, guid: 5a342f4a1b51b3643b1f8429dc5e785c, type: 3}
 --- !u!58 &1822449043
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -7551,6 +7567,7 @@ MonoBehaviour:
   effectSortingLayer: Default
   effectSortingOrder: 20
   enableHitEffect: 1
+  chromaticBurstPrefab: {fileID: 8854015220319828235, guid: 5a342f4a1b51b3643b1f8429dc5e785c, type: 3}
 --- !u!58 &1978609202
 CircleCollider2D:
   m_ObjectHideFlags: 0
