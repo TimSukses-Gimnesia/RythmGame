@@ -5,6 +5,7 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using TMPro;
 
+[RequireComponent(typeof(AudioSource))] // Pastikan ada AudioSource
 public class BeatmapSelectManager : MonoBehaviour
 {
     [Header("Difficulty Visuals")]
@@ -31,13 +32,15 @@ public class BeatmapSelectManager : MonoBehaviour
     public Button mediumButton;
     public Button hardButton;
 
+    [Header("SFX")] // 🔥 BARU: Referensi Suara
+    public AudioClip playButtonSound;
+    private AudioSource sfxSource;
+
     private string beatmapFolder;
     private string[] beatmapFolders;
     private int index = 0;
 
     private bool isAnimating = false;
-    private Button selectedDifficultyButton;
-
 
     // Difficulty for gameplay
     public enum Difficulty { Easy, Medium, Hard }
@@ -46,6 +49,9 @@ public class BeatmapSelectManager : MonoBehaviour
 
     void Start()
     {
+        // 🔥 Inisialisasi Audio Source
+        sfxSource = GetComponent<AudioSource>();
+
 #if UNITY_EDITOR
         beatmapFolder = Path.Combine(Application.dataPath, "Beatmaps");
 #else
@@ -72,13 +78,11 @@ public class BeatmapSelectManager : MonoBehaviour
         mediumButton.onClick.AddListener(() => SetDifficulty(Difficulty.Medium, mediumButton));
         hardButton.onClick.AddListener(() => SetDifficulty(Difficulty.Hard, hardButton));
 
-
         // Load first beatmap
         ShowBeatmap(0);
         SelectedDifficulty = Difficulty.Easy;
         SelectedPhantomChance = 0f;
         SetDifficulty(Difficulty.Easy, easyButton);
-
     }
 
     void SetDifficultyButtonVisual(Button newButton)
@@ -120,16 +124,13 @@ public class BeatmapSelectManager : MonoBehaviour
         if (btn == hard.button) return hard;
         return null;
     }
-    // ==================================
-    // === MENAMPILKAN BEATMAP BARU  ===
-    // ==================================
+
     public void ShowBeatmap(int i)
     {
         index = (i + beatmapFolders.Length) % beatmapFolders.Length;
 
         string folder = beatmapFolders[index];
 
-        // 1 OSU FILE PER BEATMAP (sesuai requirement baru)
         string osuFile = GetOsuFile(folder);
         if (osuFile == null)
         {
@@ -137,18 +138,14 @@ public class BeatmapSelectManager : MonoBehaviour
             return;
         }
 
-        // Preview
         previewManager.ShowPreview(folder);
         previewManager.PlayPreview(folder);
 
-        // Cover
         LoadImageToUI(previewManager.FindCoverImage(folder), coverMain);
 
-        // Prev cover
         string prevFolder = beatmapFolders[(index - 1 + beatmapFolders.Length) % beatmapFolders.Length];
         LoadImageToUI(previewManager.FindCoverImage(prevFolder), prevCover);
 
-        // Next cover
         string nextFolder = beatmapFolders[(index + 1) % beatmapFolders.Length];
         LoadImageToUI(previewManager.FindCoverImage(nextFolder), nextCover);
     }
@@ -164,10 +161,6 @@ public class BeatmapSelectManager : MonoBehaviour
             new Vector2(0.5f, 0.5f));
     }
 
-
-    // ==================================
-    // === NEXT / PREV BUTTON LOGIC   ===
-    // ==================================
     public void NextBeatmap()
     {
         if (isAnimating) return;
@@ -193,40 +186,20 @@ public class BeatmapSelectManager : MonoBehaviour
             yield break;
         }
 
-        // current index = index
-        // nextIndex = index + 1 (yang nanti menjadi main setelah animasi)
         int nextIndex = (index + 1) % len;
-
-        // cloneIndex harus next dari next -> index + 2
         int cloneIndex = (index + 2) % len;
 
-        // Jika hanya ada 1 atau 2 beatmap, fallback supaya tidak crash
-        // - jika len == 1 : cloneIndex == index
-        // - jika len == 2 : cloneIndex == (index + 0) or (index + 1) depending wrap,
-        //   tapi hasil masih masuk akal (akan menampilkan yang tersedia)
         string nextFolder = beatmapFolders[nextIndex];
         string cloneFolder = beatmapFolders[cloneIndex];
 
-        // Ambil sprite untuk animasi: sprite yang akan muncul sebagai clone (next-of-next)
         Sprite cloneSprite = null;
         string cloneCoverPath = previewManager.FindCoverImage(cloneFolder);
         if (!string.IsNullOrEmpty(cloneCoverPath))
             cloneSprite = LoadSprite(cloneCoverPath);
 
-        // Untuk safety juga kita dapat menyiapkan sprite untuk next (yang nanti jadi main)
-        Sprite nextSprite = null;
-        string nextCoverPath = previewManager.FindCoverImage(nextFolder);
-        if (!string.IsNullOrEmpty(nextCoverPath))
-            nextSprite = LoadSprite(nextCoverPath);
-
-        // Panggil animasi: berikan cloneSprite (yang merupakan next-of-next)
-        // Pastikan AnimateNext di CarouselAnimator memakai parameter ini sebagai sprite clone yang muncul dari atas/bawah.
         yield return StartCoroutine(carousel.AnimateNext(cloneSprite));
 
-        // Update index menjadi nextIndex (setelah animasi selesai)
         index = nextIndex;
-
-        // Tampilkan info beatmap baru (termasuk men-set coverMain, prevCover, nextCover)
         ShowBeatmap(index);
 
         isAnimating = false;
@@ -243,80 +216,47 @@ public class BeatmapSelectManager : MonoBehaviour
             yield break;
         }
 
-        // prevIndex = index - 1 (yang nanti jadi main)
         int prevIndex = (index - 1 + len) % len;
-
-        // cloneIndex = prev - 1 (index - 2)
         int cloneIndex = (index - 2 + len) % len;
 
         string prevFolder = beatmapFolders[prevIndex];
         string cloneFolder = beatmapFolders[cloneIndex];
 
-        // Ambil sprite clone (prev-of-prev)
         Sprite cloneSprite = null;
         string cloneCoverPath = previewManager.FindCoverImage(cloneFolder);
         if (!string.IsNullOrEmpty(cloneCoverPath))
             cloneSprite = LoadSprite(cloneCoverPath);
 
-        // Safety: sprite for prev (yang nanti jadi main)
-        Sprite prevSprite = null;
-        string prevCoverPath = previewManager.FindCoverImage(prevFolder);
-        if (!string.IsNullOrEmpty(prevCoverPath))
-            prevSprite = LoadSprite(prevCoverPath);
-
-        // Panggil animasi PREV: berikan cloneSprite (prev-of-prev)
         yield return StartCoroutine(carousel.AnimatePrev(cloneSprite));
 
-        // Update index
         index = prevIndex;
-
-        // Update UI
         ShowBeatmap(index);
 
         isAnimating = false;
     }
 
-
-    // ==================================
-    // === MANUAL DIFFICULTY SYSTEM   ===
-    // ==================================
     void SetDifficulty(Difficulty diff, Button btn)
     {
         SelectedDifficulty = diff;
 
         switch (diff)
         {
-            case Difficulty.Easy:
-                SelectedPhantomChance = 0f;
-                break;
-            case Difficulty.Medium:
-                SelectedPhantomChance = 0.38f;
-                break;
-            case Difficulty.Hard:
-                SelectedPhantomChance = 1f;
-                break;
+            case Difficulty.Easy: SelectedPhantomChance = 0f; break;
+            case Difficulty.Medium: SelectedPhantomChance = 0.38f; break;
+            case Difficulty.Hard: SelectedPhantomChance = 1f; break;
         }
 
         Debug.Log($"[Difficulty] {diff} | phantomChance = {SelectedPhantomChance}");
-
-        // Ubah visual
         SetDifficultyButtonVisual(btn);
     }
 
-
-    // ==================================
-    // === HELPER: GET SINGLE OSU FILE ===
-    // ==================================
     private string GetOsuFile(string folder)
     {
         string[] files = Directory.GetFiles(folder, "*.osu");
         if (files.Length == 0) return null;
-        return files[0];  // hanya ambil satu
+        return files[0];
     }
 
-    // ==================================
-    // === HELPER: LOAD COVER IMAGE   ===
-    // ==================================
     void LoadImageToUI(string path, Image target)
     {
         if (string.IsNullOrEmpty(path)) return;
@@ -333,51 +273,53 @@ public class BeatmapSelectManager : MonoBehaviour
         Sprite sp = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
         target.sprite = sp;
     }
+
     public void PlayGame()
     {
-        if (beatmapFolders == null || beatmapFolders.Length == 0)
+        StartCoroutine(PlayGameSequence());
+    }
+
+    IEnumerator PlayGameSequence()
+    {
+        // 1. Mainkan Suara
+        if (sfxSource != null && playButtonSound != null)
         {
-            Debug.LogError("[PlayGame] No beatmaps available.");
-            return;
+            sfxSource.PlayOneShot(playButtonSound);
+
+            // 2. Tunggu sebentar agar suara terdengar (misal 0.5 detik atau sepanjang durasi clip)
+            // Jangan terlalu lama biar pemain tidak bosan menunggu
+            yield return new WaitForSeconds(0.4f);
         }
 
-        // folder beatmap yang sedang dipilih
+        // 3. Logika Simpan Data (Pindahkan ke sini)
+        if (beatmapFolders == null || beatmapFolders.Length == 0) yield break;
+
         string folder = beatmapFolders[index];
-
-        // ambil file .osu (GetOsuFile sudah ada di script)
         string osuFile = GetOsuFile(folder);
-        if (string.IsNullOrEmpty(osuFile))
-        {
-            Debug.LogError("[PlayGame] Tidak ada file .osu untuk beatmap ini!");
-            return;
-        }
+        if (string.IsNullOrEmpty(osuFile)) yield break;
 
-        // set GameSession (sesuai struktur baru)
         GameSession.SelectedOsuFile = osuFile;
         GameSession.SelectedBeatmapPath = folder;
-        GameSession.SelectedBeatmapName = Path.GetFileName(folder); // atau previewManager metadata
+        GameSession.SelectedBeatmapName = Path.GetFileName(folder);
         GameSession.SelectedPhantomChance = SelectedPhantomChance;
-        GameSession.SelectedDifficulty = (GameSession.BeatmapDifficulty) SelectedDifficulty;
+        GameSession.SelectedDifficulty = (GameSession.BeatmapDifficulty)SelectedDifficulty;
 
-        // simpan juga ke PlayerPrefs sebagai fallback (opsional)
         PlayerPrefs.SetString("SelectedOsuFile", osuFile);
         PlayerPrefs.SetString("SelectedBeatmapPath", folder);
         PlayerPrefs.SetString("SelectedBeatmapName", GameSession.SelectedBeatmapName);
         PlayerPrefs.Save();
 
-        Debug.Log($"[PlayGame] Playing: {osuFile} | Difficulty: {SelectedDifficulty} | phantomChance: {SelectedPhantomChance}");
+        Debug.Log($"[PlayGame] Playing: {osuFile}");
 
-        // Cari LoadingManager di scene — jika ada, gunakan; jika tidak, langsung load scene
+        // 4. Pindah Scene
         var loader = FindFirstObjectByType<LoadingManager>();
         if (loader != null)
         {
-            loader.LoadLevel("Gameplay"); // pastikan nama scene gameplay sesuai (cek build settings)
+            loader.LoadLevel("Gameplay");
         }
         else
         {
-            // fallback sederhana
             SceneManager.LoadScene("Gameplay");
         }
     }
-
 }
