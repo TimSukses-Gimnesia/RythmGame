@@ -1,39 +1,61 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UI; // Wajib ada untuk mengakses komponen Image
 
 public class GlitchController : MonoBehaviour
 {
     [Header("Pengaturan Gerak Objek")]
-    public float kecepatanGerak = 500f; // Kecepatan gerak (bisa diatur di Inspector)
-    public float batasAtas = 1000f;     // Batas Y di mana objek akan di-reset
-    public float posisiAwalY = -500f;   // Posisi Y di mana objek akan muncul kembali
+    public float kecepatanGerak = 500f;
+    public float batasAtas = 1000f;
+    public float posisiAwalY = -500f;
+
+    [Header("Pengaturan Transparansi")]
+    [Range(0f, 1f)] public float transparansi = 0.5f; // Slider 0 (Hilang) sampai 1 (Jelas)
 
     private RectTransform rectTransform;
+    private Image targetImage; // Variabel untuk menyimpan komponen Image
 
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
+
+        // Ambil komponen Image yang ada di objek ini
+        targetImage = GetComponent<Image>();
+
+        // Cek apakah ada Image, kalau tidak ada kasih peringatan
+        if (targetImage == null)
+        {
+            Debug.LogWarning("Objek ini tidak punya komponen Image! Transparansi tidak bisa diubah.");
+        }
     }
 
     void Update()
     {
-        // 1. Hitung perpindahan vertikal
+        // --- 1. LOGIKA GERAK (Kode Lama) ---
         float deltaY = kecepatanGerak * Time.deltaTime;
-
-        // 2. Pindahkan objek Glitch ke atas (menambah posisi Y)
         Vector3 newPosition = rectTransform.localPosition;
         newPosition.y += deltaY;
         rectTransform.localPosition = newPosition;
 
-        // 3. LOGIKA LOOPING: Cek apakah sudah mencapai batas atas
         if (rectTransform.localPosition.y > batasAtas)
         {
-            // Jika sudah di atas batas, reset posisi Y kembali ke posisi awal
             rectTransform.localPosition = new Vector3(
-                rectTransform.localPosition.x,  // Pertahankan posisi X
-                posisiAwalY,                    // Ganti Y dengan posisi awal
-                rectTransform.localPosition.z   // Pertahankan posisi Z
+                rectTransform.localPosition.x,
+                posisiAwalY,
+                rectTransform.localPosition.z
             );
+        }
+
+        // --- 2. LOGIKA TRANSPARANSI (Kode Baru) ---
+        if (targetImage != null)
+        {
+            // Ambil warna saat ini
+            Color warnaBaru = targetImage.color;
+
+            // Ubah nilai Alpha (A) sesuai slider transparansi
+            warnaBaru.a = transparansi;
+
+            // Terapkan kembali ke gambar
+            targetImage.color = warnaBaru;
         }
     }
 }
