@@ -720,7 +720,7 @@ MonoBehaviour:
   mainMixer: {fileID: 24100000, guid: ec11488241a93894c91f4ca4461b5d89, type: 2}
   musicSlider: {fileID: 333871138}
   sfxSlider: {fileID: 416523030}
-  bgmSlider: {fileID: 0}
+  bgmSlider: {fileID: 1863680474}
 --- !u!1 &102400928
 GameObject:
   m_ObjectHideFlags: 0
@@ -5226,7 +5226,7 @@ MonoBehaviour:
   kecepatanGerak: 200
   batasAtas: 500
   posisiAwalY: -500
-  transparansi: 0.1
+  transparansi: 0.129
 --- !u!1 &1128608279
 GameObject:
   m_ObjectHideFlags: 0
