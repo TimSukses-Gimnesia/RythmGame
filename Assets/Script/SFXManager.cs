@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Audio; // 🔥 INTEGRASI MIXER
+using UnityEngine.Audio; 
 
 public class SFXManager : MonoBehaviour
 {
@@ -11,7 +11,7 @@ public class SFXManager : MonoBehaviour
     public AudioClip comboBreakSound;
     [Range(0f, 1f)] public float volume = 0.8f;
 
-    [Header("Mixer Group")] // 🔥 BARU: Untuk kontrol volume global SFX
+    [Header("Mixer Group")] 
     public AudioMixerGroup sfxGroup;
 
     private AudioSource source;
@@ -33,7 +33,7 @@ public class SFXManager : MonoBehaviour
 
         source.volume = volume;
 
-        // 🔥 HUBUNGKAN KE MIXER GROUP SFX
+ 
         if (sfxGroup != null)
         {
             source.outputAudioMixerGroup = sfxGroup;

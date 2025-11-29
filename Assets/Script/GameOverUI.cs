@@ -8,7 +8,7 @@ public class GameOverUI : MonoBehaviour
 {
     [Header("UI References")]
     public GameObject panel;
-    public TMP_Text scoreText; // 🔥 DITAMBAHKAN: Untuk menampilkan skor
+    public TMP_Text scoreText; 
     public Button retryButton;
     public Button mainMenuButton;
 
@@ -44,7 +44,6 @@ public class GameOverUI : MonoBehaviour
         if (panel == null)
             panel = transform.Find("GameOverPanel")?.gameObject;
 
-        // --- Create SFX Audio Source ---
         sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.playOnAwake = false;
         sfxSource.loop = false;
@@ -80,9 +79,7 @@ public class GameOverUI : MonoBehaviour
         });
     }
 
-    // ============================================================
-    // SHOW GAME OVER & SAVE SCORE
-    // ============================================================
+ 
     public void ShowGameOver(long finalScore)
     {
         if (isVisible) return;
@@ -97,7 +94,6 @@ public class GameOverUI : MonoBehaviour
         }
 
         // 2. SIMPAN SKOR TERTINGGI
-        // Asumsi: GameSession.SelectedBeatmapName menyimpan kunci unik beatmap
         if (!string.IsNullOrEmpty(GameSession.SelectedBeatmapName))
         {
             Debug.Log($"Saving failed score: {finalScore} for map {GameSession.SelectedBeatmapName}");
@@ -119,9 +115,6 @@ public class GameOverUI : MonoBehaviour
         StartCoroutine(PauseGameAfterDelay(0.1f));
     }
 
-    // ============================================================
-    // OVERLAY FADE EFFECT
-    // ============================================================
     IEnumerator FadeRedOverlay()
     {
         // Fade In
@@ -167,9 +160,7 @@ public class GameOverUI : MonoBehaviour
     }
 
 
-    // ============================================================
-    // AUDIO
-    // ============================================================
+
     void PlayClick()
     {
         if (clickSFX != null)
@@ -182,9 +173,6 @@ public class GameOverUI : MonoBehaviour
             sfxSource.PlayOneShot(defeatSFX);
     }
 
-    // ============================================================
-    // BUTTON ACTIONS (with delay)
-    // ============================================================
     IEnumerator DelayedRetry()
     {
         // Hentikan overlay saat aksi dimulai

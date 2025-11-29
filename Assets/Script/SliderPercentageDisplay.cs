@@ -5,7 +5,7 @@ using TMPro; // Asumsi kamu menggunakan TextMeshPro
 [RequireComponent(typeof(Slider))]
 public class SliderPercentageDisplay : MonoBehaviour
 {
-    // 🔥 Tempatkan komponen TextMeshProUGUI di slot ini
+
     public TextMeshProUGUI valueText;
 
     private Slider slider;

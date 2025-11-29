@@ -77,7 +77,7 @@ public class HitJudgement : MonoBehaviour
         return (totalPoints / maxPoints) * 100f;
     }
 
-    // 🔥 HELPER: Menentukan Judgement berdasarkan selisih waktu
+
     private string GetJudgement(double timeDiff)
     {
         if (timeDiff <= perfectTime) return "Perfect";
@@ -85,7 +85,7 @@ public class HitJudgement : MonoBehaviour
         return "Miss";
     }
 
-    // 🔥 HELPER: Memainkan animasi imersif
+    
     void PlayHitAnimation(Note note, string judgementType)
     {
         var effect = note.GetComponent<NoteHitEffect>();
@@ -246,7 +246,7 @@ public class HitJudgement : MonoBehaviour
             {
                 Note noteToHit = notesInTrigger[0];
 
-                // 🔥 FILTER DECOY
+           
                 if (noteToHit.type == "decoy")
                 {
                     notesInTrigger.RemoveAt(0);
@@ -255,7 +255,7 @@ public class HitJudgement : MonoBehaviour
                 }
 
                 double timeDiff = System.Math.Abs(songTime - noteToHit.hitTime);
-                string judgement = GetJudgement(timeDiff); // 🔥 FUNGSI INI SUDAH ADA SEKARANG
+                string judgement = GetJudgement(timeDiff); 
 
                 if (judgement != "Miss")
                 {

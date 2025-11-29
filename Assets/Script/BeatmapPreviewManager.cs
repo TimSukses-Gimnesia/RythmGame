@@ -9,7 +9,7 @@ using UnityEngine.Audio;
 [RequireComponent(typeof(AudioSource))]
 public class BeatmapPreviewManager : MonoBehaviour
 {
-    // ... (Class OsuMetadata tetap sama) ...
+   
     class OsuMetadata
     {
         public string title;
@@ -18,7 +18,7 @@ public class BeatmapPreviewManager : MonoBehaviour
         public float previewTime;
     }
 
-    // ... (Fungsi ReadMetadataFromOsu tetap sama) ...
+
     OsuMetadata ReadMetadataFromOsu(string folder)
     {
         string[] osuFiles = Directory.GetFiles(folder, "*.osu");
@@ -45,7 +45,7 @@ public class BeatmapPreviewManager : MonoBehaviour
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI artistText;
 
-    [Header("Animation Settings")] // 🔥 BARU: Pengaturan Transisi
+    [Header("Animation Settings")] 
     public float fadeDuration = 0.25f; // Kecepatan transisi (detik)
 
     [Header("Audio Mixer")]
@@ -63,7 +63,6 @@ public class BeatmapPreviewManager : MonoBehaviour
         if (musicGroup != null) audioSource.outputAudioMixerGroup = musicGroup;
     }
 
-    // 🔥 FUNGSI UTAMA YANG DIUBAH
     public void ShowPreview(string beatmapFolder)
     {
         // Hentikan transisi lama jika user spam tombol, lalu mulai yang baru
@@ -71,7 +70,7 @@ public class BeatmapPreviewManager : MonoBehaviour
         transitionCoroutine = StartCoroutine(TransitionVisuals(beatmapFolder));
     }
 
-    // 🔥 LOGIKA TRANSISI (Fade Out -> Load -> Update -> Fade In)
+  
     IEnumerator TransitionVisuals(string folder)
     {
         // 1. FADE OUT (Menghilang)

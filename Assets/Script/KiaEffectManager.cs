@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public class KiaiEffectManager : MonoBehaviour
 {
     [Header("References")]
-    // 🔥 BISA TARIK SALAH SATU (Image atau SpriteRenderer)
+
     public Image backgroundImageUI;         // Jika pakai UI Image
     public SpriteRenderer backgroundSprite; // Jika pakai Sprite Renderer
 
@@ -53,7 +53,6 @@ public class KiaiEffectManager : MonoBehaviour
             timingPoints.Sort((a, b) => a.timeSec.CompareTo(b.timeSec));
     }
 
-    // 🔥 FUNGSI PENTING: Dipanggil saat Game Over agar layar tidak putih
     public void StopKiaiImmediate()
     {
         StopAllCoroutines(); // Matikan animasi flash
@@ -82,9 +81,7 @@ public class KiaiEffectManager : MonoBehaviour
     {
         if (timingPoints == null || timingPoints.Count == 0 || spawner == null) return;
 
-        // Jangan update jika game sedang pause/game over (TimeScale 0), 
-        // KECUALI jika kita ingin animasi UI tetap jalan.
-        // Tapi untuk sinkronisasi lagu, kita pakai waktu lagu.
+     
 
         double songTime = AudioSettings.dspTime - spawner.songStartDspTime;
 
@@ -157,7 +154,7 @@ public class KiaiEffectManager : MonoBehaviour
         progressBarFill.sizeDelta = size;
     }
 
-    // 🔥 ANIMASI FLASH (Menggunakan unscaledDeltaTime agar tidak beku saat Game Over)
+
     System.Collections.IEnumerator FlashEffect()
     {
         float t = 0f;

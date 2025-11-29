@@ -119,7 +119,7 @@ public class SpawnNote : MonoBehaviour
         }
     }
 
-    // --- Logic Decoy Injection ---
+    
     void InjectDecoysIntoGaps(List<OsuBeatmapLoader.TimingPoint> timingPoints, List<OsuBeatmapLoader.OsuNote> existingNotes)
     {
         if (timingPoints == null || timingPoints.Count == 0) return;
@@ -261,7 +261,7 @@ public class SpawnNote : MonoBehaviour
         if (instance != null) instance.InternalFreezeGameplay();
     }
 
-    // 🔥 FUNGSI PENTING: Mematikan gameplay dan efek saat Game Over
+
     private void InternalFreezeGameplay()
     {
         if (isGameOver) return;
@@ -274,7 +274,7 @@ public class SpawnNote : MonoBehaviour
         Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None);
         foreach (var note in allNotes) note.enabled = false;
 
-        // 🔥 MATIKAN EFEK KIAI/FLASH AGAR LAYAR TIDAK PUTIH TERUS
+
         var kiaiManager = FindFirstObjectByType<KiaiEffectManager>();
         if (kiaiManager != null)
         {
@@ -410,7 +410,7 @@ public class SpawnNote : MonoBehaviour
         }
     }
 
-    // Helpers
+  
     Quaternion GetRotationForSpawn(Transform t) { if (t == upSpawn) return Quaternion.Euler(0, 0, 180); if (t == downSpawn) return Quaternion.Euler(0, 0, 0); if (t == leftSpawn) return Quaternion.Euler(0, 0, -90); if (t == rightSpawn) return Quaternion.Euler(0, 0, 90); return Quaternion.identity; }
     Transform GetRandomOtherSpawn(string d) { List<Transform> o = new List<Transform>(); if (d != "up") o.Add(upSpawn); if (d != "down") o.Add(downSpawn); if (d != "left") o.Add(leftSpawn); if (d != "right") o.Add(rightSpawn); if (o.Count == 0) return null; return o[Random.Range(0, o.Count)]; }
     Transform GetCorrespondingTarget(Transform t) { if (t == upSpawn) return upTarget; if (t == downSpawn) return downTarget; if (t == leftSpawn) return leftTarget; if (t == rightSpawn) return rightTarget; return null; }

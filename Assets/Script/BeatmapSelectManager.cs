@@ -33,7 +33,7 @@ public class BeatmapSelectManager : MonoBehaviour
     public Button mediumButton;
     public Button hardButton;
 
-    // 🔥 BARU: UI TEXT UNTUK HIGHSCORE
+    // UI TEXT UNTUK HIGHSCORE
     [Header("Highscore UI")]
     public TextMeshProUGUI highscoreText; // Hubungkan ini di Inspector
 
@@ -149,11 +149,11 @@ public class BeatmapSelectManager : MonoBehaviour
         string nextFolder = beatmapFolders[(index + 1) % beatmapFolders.Length];
         LoadImageToUI(previewManager.FindCoverImage(nextFolder), nextCover);
 
-        // 🔥 BARU: Tampilkan High Score
+        // Tampilkan High Score
         DisplayHighscores(beatmapName);
     }
 
-    // 🔥 FUNGSI BARU: Hanya Menampilkan SKOR TERTINGGI PERTAMA secara MENDATAR
+    //enampilkan SKOR TERTINGGI PERTAMA secara 
     private void DisplayHighscores(string beatmapName)
     {
         if (highscoreText == null) return;
@@ -171,7 +171,7 @@ public class BeatmapSelectManager : MonoBehaviour
             HighscoreManager.ScoreEntry topScoreEntry = topScores[0];
 
             // Format tampilan skor tertinggi secara mendatar:
-            // "🏆 High Score: [SCORE] ([DATE])"
+            // High Score: [SCORE] ([DATE])"
             string display = $"High Score: <color=yellow>{topScoreEntry.score:N0}</color> ";
 
             highscoreText.text = display;

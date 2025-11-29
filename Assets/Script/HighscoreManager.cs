@@ -16,9 +16,7 @@ public static class HighscoreManager
         return "Highscore_" + beatmapName;
     }
 
-    // ====================================================================================
-    // SIMPAN SCORE BARU
-    // ====================================================================================
+
     public static void AddScore(string beatmapName, long newScore)
     {
         string key = GetKey(beatmapName);
@@ -45,9 +43,7 @@ public static class HighscoreManager
         PlayerPrefs.Save();
     }
 
-    // ====================================================================================
-    // LOAD TOP 3
-    // ====================================================================================
+ 
     public static List<ScoreEntry> LoadTop3(string beatmapName)
     {
         string key = GetKey(beatmapName);

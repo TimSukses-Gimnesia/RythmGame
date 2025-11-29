@@ -34,7 +34,7 @@ public class Obstacle : MonoBehaviour
     private Renderer obstacleRenderer;
     private Material obstacleMaterial;
     private Color originalColor;
-    // -------------------------------------------
+
 
     private double songStartDspTime;
     private bool hasReachedTarget = false;
@@ -47,7 +47,7 @@ public class Obstacle : MonoBehaviour
         var spawner = FindFirstObjectByType<SpawnNote>();
         songStartDspTime = spawner != null ? spawner.songStartDspTime : AudioSettings.dspTime;
 
-        // --- VISUAL INITIATION (Vibrancy & Self-Illumination) ---
+  
         obstacleRenderer = GetComponent<Renderer>();
         if (obstacleRenderer != null)
         {
@@ -60,7 +60,7 @@ public class Obstacle : MonoBehaviour
 
             ApplyVibrancyAndSelfIllumination();
         }
-        // ---------------------------------------------------------
+
 
         transform.position = spawnPos;
         moveDir = (targetPos - spawnPos).normalized;

@@ -36,8 +36,6 @@ public class VolumeSettings : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
-
-    // 🔥 GANTI DARI AWAKE KE START
     void Start()
     {
         // Jalankan setup awal

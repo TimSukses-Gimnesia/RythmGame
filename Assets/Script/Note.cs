@@ -108,23 +108,20 @@ public class Note : MonoBehaviour
 
     public void SetupVisuals()
     {
-        // 🔥 LOGIKA WARNA: Normal = Putih, Phantom = Beda 🔥
+
 
         if (isPhantom)
         {
-            // Jika Note ini tipe yang PINDAH LANE (Phantom), beri warna khusus
-            // Contoh: Ungu Neon (Agar terlihat berbahaya/trick)
+         
             baseNoteColor =  Color.white;
         }
         else
         {
-            // Jika Note biasa (Lurus) dari arah manapun (Up/Down/Left/Right), tetap Putih
+           
             baseNoteColor = Color.white;
         }
 
-        // --- Terapkan Warna ke Visual ---
 
-        // 1. Setup Visual untuk HOLD Note
         if (type == "hold")
         {
             if (mySpriteRenderer != null) mySpriteRenderer.enabled = false;
@@ -169,8 +166,7 @@ public class Note : MonoBehaviour
             mySpriteRenderer.enabled = true;
             mySpriteRenderer.size = new Vector2(1f, 1f);
 
-            // Jika Decoy, biarkan script DecoyColorChanger yang mengatur warnanya
-            // Jika bukan Decoy, terapkan logika warna kita (Putih atau Ungu Phantom)
+          
             if (type != "decoy")
             {
                 mySpriteRenderer.color = baseNoteColor;

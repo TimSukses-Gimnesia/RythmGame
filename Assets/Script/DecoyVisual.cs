@@ -19,11 +19,7 @@ public class DecoyVisual : MonoBehaviour
         note = GetComponent<Note>();
         sr = GetComponent<SpriteRenderer>();
 
-        // Simpan posisi relatif terhadap parent (jika ada)
-        // Tapi karena note bergerak via transform.position di Note.cs,
-        // kita memanipulasi "Sprite" child-nya atau offset visualnya.
-        // Untuk simpelnya, kita akan memanipulasi offset renderernya jika memungkinkan,
-        // tapi cara paling aman adalah mengubah warna saja jika goyangan bikin pusing.
+      
     }
 
     void Update()
@@ -45,14 +41,9 @@ public class DecoyVisual : MonoBehaviour
             sr.color = new Color(glitchColor.r, glitchColor.g, glitchColor.b, randomAlpha);
         }
 
-        // 2. Efek Getar (Jitter/Glitch Shake)
-        // Kita manipulasi posisi sprite sedikit dari titik aslinya
         Vector3 shakeOffset = (Vector3)Random.insideUnitCircle * shakeAmount;
 
-        // PENTING: Kita tambahkan offset ke posisi yang sudah dihitung Note.cs
-        // Karena Note.cs menimpa transform.position setiap frame, 
-        // kita lakukan ini di LateUpdate atau manipulasi child object 'Body'.
-        // Cara termudah tanpa child:
+
         sr.transform.localPosition += shakeOffset * 0.1f; // Efek getar halus
     }
 }

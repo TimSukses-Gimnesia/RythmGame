@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Audio; // 🔥 INTEGRASI MIXER
+using UnityEngine.Audio; 
 using System.Collections;
 
 public class MainMenuAudioManager : MonoBehaviour
@@ -10,7 +10,7 @@ public class MainMenuAudioManager : MonoBehaviour
     public AudioClip clickSound;
     public AudioClip bgmMusic;
 
-    [Header("Mixer Groups")] // 🔥 BARU: Hubungkan ke grup BGM & SFX
+    [Header("Mixer Groups")] 
     public AudioMixerGroup bgmGroup;
     public AudioMixerGroup sfxGroup;
 

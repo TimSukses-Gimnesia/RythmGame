@@ -17,14 +17,12 @@ public class CarouselAnimator : MonoBehaviour
 
     void Start()
     {
-        posPrev = prevCover.anchoredPosition; // (0, +450)
-        posMain = mainCover.anchoredPosition; // (-150, 0)
-        posNext = nextCover.anchoredPosition; // (0, -450)
+        posPrev = prevCover.anchoredPosition; 
+        posMain = mainCover.anchoredPosition; 
+        posNext = nextCover.anchoredPosition; 
     }
 
-    // ==========================================================
-    // NEXT  (scroll downward)
-    // ==========================================================
+  
     public IEnumerator AnimateNext(Sprite newSpriteForNext)
     {
         // clone untuk next yang baru
@@ -75,9 +73,7 @@ public class CarouselAnimator : MonoBehaviour
         Destroy(clone);
     }
 
-    // ==========================================================
-    // PREV  (scroll upward)
-    // ==========================================================
+
     public IEnumerator AnimatePrev(Sprite newSpriteForPrev)
     {
         // clone untuk prev yang baru

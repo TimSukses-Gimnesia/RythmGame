@@ -40,9 +40,6 @@ public class CDSpinner : MonoBehaviour
         }
     }
 
-    // ===============================================
-    //    DIRECTION CONTROL (CALLED FROM NEXT/PREV)
-    // ===============================================
     public void SetDirectionNext()   // spin ke atas
     {
         rotationDirection = +1;
@@ -55,9 +52,6 @@ public class CDSpinner : MonoBehaviour
         TriggerBurst();
     }
 
-    // ===============================================
-    //    BURST EFFECT (RETRO)
-    // ===============================================
     public void TriggerBurst()
     {
         if (burstRoutine != null) StopCoroutine(burstRoutine);

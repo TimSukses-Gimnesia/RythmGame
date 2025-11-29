@@ -12,7 +12,7 @@ public static class OsuBeatmapLoader
         public string audioFilename;      // Nama file lagu
         public float audioLeadInSec;      // Lead-in time
         public List<OsuNote> notes = new List<OsuNote>(); // Daftar semua note
-        public List<TimingPoint> timingPoints = new List<TimingPoint>(); // 🔥 Data BPM & Kiai
+        public List<TimingPoint> timingPoints = new List<TimingPoint>(); 
     }
 
     // Class untuk menyimpan data Timing (BPM & Reff)
@@ -110,9 +110,7 @@ public static class OsuBeatmapLoader
                 }
                 else // Green line (Inherited), ambil data Kiai-nya saja, beatLength pakai previous
                 {
-                    // Untuk simplifikasi decoy, kita skip logic complex green line beatLength,
-                    // tapi kita tetap butuh data Kiai start/end dari sini.
-                    // (Implementasi Kiai Manager nanti akan membaca list ini urut waktu)
+                
                     chart.timingPoints.Add(new TimingPoint
                     {
                         timeSec = timeMs / 1000f,

@@ -113,9 +113,9 @@ public class LevelCompleteUI : MonoBehaviour
         return "Keep practicing — you can do this!";
     }
 
-    // ===========================================================
+
     // BUTTON IMPLEMENTATION (Click + Action inside same function)
-    // ===========================================================
+   
 
     void PlayClick()
     {
@@ -160,7 +160,7 @@ public class LevelCompleteUI : MonoBehaviour
         CloseHighscores();
     }
 
-    // ===========================================================
+  
 
     void OpenHighscores()
     {
